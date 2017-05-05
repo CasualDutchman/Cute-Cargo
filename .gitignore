@@ -2,6 +2,7 @@
 bin/
 bin-debug/
 bin-release/
+export/
 [Oo]bj/ # FlashDevelop obj
 [Bb]in/ # FlashDevelop bin
 
