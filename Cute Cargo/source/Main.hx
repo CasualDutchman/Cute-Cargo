@@ -12,6 +12,6 @@ class Main extends Sprite
 		
 		FlxG.fullscreen = true;
 		
-		addChild(new FlxGame(0, 0, MenuState));
+		addChild(new FlxGame(480, 270, MenuState));
 	}
 }
