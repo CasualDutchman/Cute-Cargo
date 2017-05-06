@@ -11,7 +11,7 @@ class Main extends Sprite
 		super();
 		
 		//FlxG.fullscreen = true;
-		var scaler:Float = 0.5;
+		var scaler:Float = 1;
 		
 		addChild(new FlxGame(Std.int(960 * scaler), Std.int(540 * scaler), MenuState));
 	}
