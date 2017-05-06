@@ -10,8 +10,9 @@ class Main extends Sprite
 	{
 		super();
 		
-		FlxG.fullscreen = true;
+		//FlxG.fullscreen = true;
+		var scaler:Float = 0.5;
 		
-		addChild(new FlxGame(480, 270, MenuState));
+		addChild(new FlxGame(Std.int(960 * scaler), Std.int(540 * scaler), MenuState));
 	}
 }
