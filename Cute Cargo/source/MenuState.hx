@@ -11,6 +11,7 @@ class MenuState extends FlxState
 	
 	override public function create():Void
 	{
+		//creating a simple button to go to the game
 		buttonPlay = new FlxButton(0, 0, "Play", clickedPlay);
 		buttonPlay.screenCenter();
 		add(buttonPlay);

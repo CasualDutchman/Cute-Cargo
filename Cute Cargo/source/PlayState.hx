@@ -2,6 +2,7 @@ package;
 
 import flixel.FlxState;
 import flixel.FlxSprite;
+import flixel.group.FlxGroup;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.FlxG;
 import flixel.text.FlxText;
@@ -11,14 +12,22 @@ import flixel.FlxObject;
 
 class PlayState extends FlxState
 {
+	//crate color ID's (red, blue, yellow, purple, orange, green)
 	public static var crateIDList:Array<Int> = [1, 10, 100, 11, 101, 110];
 	
 	public var crateGrid:Array<Array<Int>> = new Array<Array<Int>>();
-	public var gridSizeX:Int = 10;
-	public var gridSizeY:Int = 8;
+	//grid preferences, size, starting x y in game
+	public static var gridSizeX:Int = 10;
+	public static var gridSizeY:Int = 8;
+	public var gridStartX:Int = 10;
+	public var gridStartY:Int = 10;
 	
 	private var testText:FlxText;
+	
 	private var crate:FlxSprite;
+	private var crateGroup:FlxGroup; // this group manages updating the graphix grid
+	
+	public var currentMovingPlayer:Int = 1; // who's turn?
 	
 	private var player1:Player;
 	private var player2:Player;
@@ -26,17 +35,45 @@ class PlayState extends FlxState
 	
 	override public function create():Void
 	{
-		createGrid(10, 10);
+		createGrid();
 		super.create();
 	}
 	
+	/**
+	 * Update function. Handles UpdateGrid() and player.movement()
+	 */
 	override public function update(elapsed:Float):Void
 	{	
-		player1.movement(crateGrid);
+		if(currentMovingPlayer == 0)
+			player1.movement(crateGrid);
+			
+		if(currentMovingPlayer == 1)
+			player2.movement(crateGrid);
+			
+		if(currentMovingPlayer == 2)
+			player3.movement(crateGrid);
+			
+		//when SPACE pressed, which currentMoveingPlayer
+		if (FlxG.keys.anyJustPressed([SPACE]))
+		{
+			currentMovingPlayer++;
+			if (currentMovingPlayer >= 3)
+				currentMovingPlayer = 0;
+		}
+		
+		//when R pressed, reset current level
+		if (FlxG.keys.anyJustPressed([R]))
+			FlxG.resetState();
+		
 		super.update(elapsed);
+		
+		updateGrid();
 	}
 	
-	private function createGrid(startX:Int, startY:Int)
+	/**
+	 * This crates players and a grid according to the preferences set at the top
+	 */
+	private function createGrid()
 	{
 		for (y in 0...gridSizeY)
 		{
@@ -47,13 +84,15 @@ class PlayState extends FlxState
 					
 				crateGrid[y][x] = crateIDList[FlxG.random.int(0, 2)];
 				
-				if (FlxG.random.bool(10))
+				if (FlxG.random.bool(20))
 					crateGrid[y][x] = 0;
 				
 				if (x < 4 && y < 3)
 					crateGrid[y][x] = 0;
 			}
 		}
+		
+		crateGroup = new FlxGroup();
 		
 		for (y in 0...gridSizeY)
 		{
@@ -64,9 +103,9 @@ class PlayState extends FlxState
 				
 				if (crateGrid[y][x] != 0)
 				{
-					crate = new FlxSprite(startX + (x * 64), startY + (y * 64));
+					crate = new FlxSprite(gridStartX + (x * 64), gridStartY + (y * 64));
 					crate.loadGraphic(getAsset(crateGrid[y][x]));
-					add(crate);
+					crateGroup.add(crate);
 				}
 			}
 		}
@@ -84,11 +123,34 @@ class PlayState extends FlxState
 		add(player3);
 	}
 	
+	/**
+	 * Updates the graphics of the grid
+	 */
 	private function updateGrid()
 	{
+		crateGroup.destroy();
 		
+		crateGroup = new FlxGroup();
+		
+		for (y in 0...gridSizeY)
+		{
+			for (x in 0...gridSizeX)
+			{				
+				if (crateGrid[y][x] != 0 && crateGrid[y][x] != 2 && crateGrid[y][x] != 3 && crateGrid[y][x] != 4)
+				{
+					crate = new FlxSprite(gridStartX + (x * 64), gridStartY + (y * 64));
+					crate.loadGraphic(getAsset(crateGrid[y][x]));
+					crateGroup.add(crate);
+				}
+			}
+		}
+		
+		add(crateGroup);
 	}
 	
+	/**
+	 * What asset to use for different ID crates
+	 */
 	private function getAsset(id:Int):FlxGraphicAsset
 	{
 		switch(id)
