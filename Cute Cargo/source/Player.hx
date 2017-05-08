@@ -89,6 +89,12 @@ class Player extends FlxSprite
 
 	public function ClickBlock(currentGrid:Array<Array<Int>>)
 	{
+		if (pullingOrientation != MoveOrientation.NONE)
+		{
+			pullingOrientation = MoveOrientation.NONE;
+			return;
+		}
+		
 		var positionClicked:FlxPoint = PlayState.GetGridPositionByScreenSpace(FlxG.mouse.screenX, FlxG.mouse.screenY);
 		
 		for (i in 0...3)
