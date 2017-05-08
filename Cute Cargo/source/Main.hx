@@ -14,6 +14,6 @@ class Main extends Sprite
 		
 		var scaler:Float = 1; // this scales handles the camera zoom. (1 = normal, 2 = zoomed in)
 		
-		addChild(new FlxGame(Std.int(960 / scaler), Std.int(540 / scaler), MenuState));
+		addChild(new FlxGame(Std.int(960 * scaler), Std.int(540 * scaler), MenuState));
 	}
 }

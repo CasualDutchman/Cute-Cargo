@@ -3,12 +3,12 @@ package;
 import flixel.FlxState;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
-import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.FlxG;
 import flixel.text.FlxText;
 import flixel.tile.FlxTilemap;
-import flixel.system.FlxAssets.FlxGraphicAsset;
+import flixel.system.FlxAssets;
 import flixel.FlxObject;
+import flixel.math.FlxPoint;
 
 class PlayState extends FlxState
 {
@@ -19,15 +19,16 @@ class PlayState extends FlxState
 	//grid preferences, size, starting x y in game
 	public static var gridSizeX:Int = 10;
 	public static var gridSizeY:Int = 8;
-	public var gridStartX:Int = 10;
-	public var gridStartY:Int = 10;
+	public static var gridStartX:Int = 10;
+	public static var gridStartY:Int = 10;
+	public static var cratePixelSize:Int = 64;
 	
 	private var testText:FlxText;
 	
 	private var crate:FlxSprite;
 	private var crateGroup:FlxGroup; // this group manages updating the graphix grid
 	
-	public var currentMovingPlayer:Int = 1; // who's turn?
+	public var currentMovingPlayer:Int = 0; // who's turn?
 	
 	private var player1:Player;
 	private var player2:Player;
@@ -36,6 +37,10 @@ class PlayState extends FlxState
 	override public function create():Void
 	{
 		createGrid();
+		
+		testText = new FlxText(FlxG.width - 280, 20, 0, "[Space] next player\n[R] reset", 20);
+		add(testText);
+
 		super.create();
 	}
 	
@@ -44,16 +49,21 @@ class PlayState extends FlxState
 	 */
 	override public function update(elapsed:Float):Void
 	{	
-		if(currentMovingPlayer == 0)
+		if (currentMovingPlayer == 0)
+		{
 			player1.movement(crateGrid);
-			
-		if(currentMovingPlayer == 1)
+			if (FlxG.mouse.justPressed)
+				player1.ClickBlock(crateGrid);
+		}
+		if (currentMovingPlayer == 1)
+		{
 			player2.movement(crateGrid);
-			
-		if(currentMovingPlayer == 2)
+		}
+		if (currentMovingPlayer == 2)
+		{
 			player3.movement(crateGrid);
-			
-		//when SPACE pressed, which currentMoveingPlayer
+		}
+		//when SPACE pressed, which currentMovingPlayer
 		if (FlxG.keys.anyJustPressed([SPACE]))
 		{
 			currentMovingPlayer++;
@@ -68,6 +78,7 @@ class PlayState extends FlxState
 		super.update(elapsed);
 		
 		updateGrid();
+		
 	}
 	
 	/**
@@ -97,13 +108,10 @@ class PlayState extends FlxState
 		for (y in 0...gridSizeY)
 		{
 			for (x in 0...gridSizeX)
-			{
-				//testText = new FlxText(x * 25, y * 20, 0, crateGrid[y][x] + "");
-				//add(testText);
-				
+			{				
 				if (crateGrid[y][x] != 0)
 				{
-					crate = new FlxSprite(gridStartX + (x * 64), gridStartY + (y * 64));
+					crate = new FlxSprite(gridStartX + (x * cratePixelSize), gridStartY + (y * cratePixelSize));
 					crate.loadGraphic(getAsset(crateGrid[y][x]));
 					crateGroup.add(crate);
 				}
@@ -123,6 +131,20 @@ class PlayState extends FlxState
 		add(player3);
 	}
 	
+	public static function GetGridPositionByScreenSpace(_x:Int, _y:Int):FlxPoint
+	{
+		_x -= gridStartX;
+		_y -= gridStartY;
+		
+		var xOnGrid = Math.floor(_x / cratePixelSize);
+		var yOnGrid = Math.floor(_y / cratePixelSize);
+		
+		xOnGrid = ClampInt(xOnGrid, 0, gridSizeX - 1);
+		yOnGrid = ClampInt(yOnGrid, 0, gridSizeY - 1);
+		
+		return new FlxPoint(xOnGrid, yOnGrid);
+	}
+	
 	/**
 	 * Updates the graphics of the grid
 	 */
@@ -138,7 +160,7 @@ class PlayState extends FlxState
 			{				
 				if (crateGrid[y][x] != 0 && crateGrid[y][x] != 2 && crateGrid[y][x] != 3 && crateGrid[y][x] != 4)
 				{
-					crate = new FlxSprite(gridStartX + (x * 64), gridStartY + (y * 64));
+					crate = new FlxSprite(gridStartX + (x * cratePixelSize), gridStartY + (y * cratePixelSize));
 					crate.loadGraphic(getAsset(crateGrid[y][x]));
 					crateGroup.add(crate);
 				}
@@ -162,6 +184,22 @@ class PlayState extends FlxState
 			case 101: return AssetPaths.orange_crate__png;
 			case 110: return AssetPaths.green_crate__png;
 			default: return AssetPaths.red_crate__png;
+		}
+	}
+	
+	public static function ClampInt(value:Int, min:Int, max:Int):Int
+	{		
+		if (value < min)
+		{
+			return min;
+		}
+		else if (value > max)
+		{
+			return max;
+		}
+		else
+		{
+			return value;
 		}
 	}
 }
