@@ -23,7 +23,7 @@ class PlayState extends FlxState
 	public static var gridStartY:Int = 10;
 	public static var cratePixelSize:Int = 64;
 	
-	private var testText:FlxText;
+	public static var testText:FlxText;
 	
 	private var crate:FlxSprite;
 	private var crateGroup:FlxGroup; // this group manages updating the graphix grid
@@ -33,6 +33,7 @@ class PlayState extends FlxState
 	private var player1:Player;
 	private var player2:Player;
 	private var player3:Player;
+	private var playerList:Array<Player> = [];
 	
 	override public function create():Void
 	{
@@ -49,29 +50,23 @@ class PlayState extends FlxState
 	 */
 	override public function update(elapsed:Float):Void
 	{	
-		if (currentMovingPlayer == 0)
+		playerList[currentMovingPlayer].movement(crateGrid);
+		
+		#if flash
+		if (FlxG.mouse.justPressed)
+			playerList[currentMovingPlayer].ClickBlock(crateGrid, FlxG.mouse.screenX, FlxG.mouse.screenY);
+		#end
+		
+		#if mobile
+		for (touch in FlxG.touches.list)
 		{
-			player1.movement(crateGrid);
-			
-			if (FlxG.mouse.justPressed)
-				player1.ClickBlock(crateGrid);
-		}
-		if (currentMovingPlayer == 1)
-		{
-			player2.movement(crateGrid);
-			
-			if (FlxG.mouse.justPressed)
-				player2.ClickBlock(crateGrid);
-		}
-		if (currentMovingPlayer == 2)
-		{
-			player3.movement(crateGrid);
-			
-			if (FlxG.mouse.justPressed)
-				player3.ClickBlock(crateGrid);
-		}
+			if (touch.justPressed)
+			playerList[currentMovingPlayer].ClickBlock(crateGrid, touch.x, touch.y);
+		}	
+		#end
 		
 		//when SPACE pressed, which currentMovingPlayer
+		#if flash
 		if (FlxG.keys.anyJustPressed([SPACE]))
 		{
 			currentMovingPlayer++;
@@ -82,6 +77,7 @@ class PlayState extends FlxState
 		//when R pressed, reset current level
 		if (FlxG.keys.anyJustPressed([R]))
 			FlxG.resetState();
+		#end
 		
 		super.update(elapsed);
 		
@@ -136,6 +132,10 @@ class PlayState extends FlxState
 		player3 = new Player(10 + 128, 10, 2, 2, 0);
 		player3.movement(crateGrid);
 		add(player3);
+		
+		playerList.push(player1);
+		playerList.push(player2);
+		playerList.push(player3);
 	}
 	
 	public static function GetGridPositionByScreenSpace(_x:Int, _y:Int):FlxPoint

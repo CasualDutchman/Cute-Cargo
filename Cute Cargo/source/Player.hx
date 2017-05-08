@@ -4,6 +4,7 @@ import flixel.FlxSprite;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
+import flixel.input.FlxSwipe;
 
 class Player extends FlxSprite 
 {
@@ -43,10 +44,25 @@ class Player extends FlxSprite
 		var _left:Bool = false;
 		var _right:Bool = false;
 		
+		#if flash
 		_up = FlxG.keys.anyJustPressed([UP, W]);
 		_down = FlxG.keys.anyJustPressed([DOWN, S]);
 		_left = FlxG.keys.anyJustPressed([LEFT, A]);
 		_right = FlxG.keys.anyJustPressed([RIGHT, D]);
+		#end
+		
+		#if mobile
+		for (swipe in FlxG.swipes)
+		{
+			if (swipe.duration <= 0.25 && swipe.distance >= 60)
+			{
+				_up = (swipe.angle >= -20 && swipe.angle <= 20);
+				_down = (swipe.angle <= -160 && swipe.angle >= -180) || (swipe.angle >= 160 && swipe.angle <= 180);
+				_left = (swipe.angle <= -70 && swipe.angle >= -110);
+				_right = (swipe.angle >= 70 && swipe.angle <= 110);
+			}
+		}
+		#end
 		
 		if (pullingOrientation == MoveOrientation.UP || pullingOrientation == MoveOrientation.DOWN)
 			_left = _right = false;
@@ -87,15 +103,15 @@ class Player extends FlxSprite
 		currentGrid[posY][posX] = playerID + 2; // set current position to a player grid ID
 	}
 
-	public function ClickBlock(currentGrid:Array<Array<Int>>)
+	public function ClickBlock(currentGrid:Array<Array<Int>>, clickX:Int, clickY:Int)
 	{
-		if (pullingOrientation != MoveOrientation.NONE)
+		var positionClicked:FlxPoint = PlayState.GetGridPositionByScreenSpace(clickX, clickY);
+		
+		if (pullingOrientation != MoveOrientation.NONE && positionClicked.x == pullingBlockPosX && positionClicked.y == pullingBlockPosY)
 		{
 			pullingOrientation = MoveOrientation.NONE;
 			return;
 		}
-		
-		var positionClicked:FlxPoint = PlayState.GetGridPositionByScreenSpace(FlxG.mouse.screenX, FlxG.mouse.screenY);
 		
 		for (i in 0...3)
 		{
