@@ -58,10 +58,14 @@ class PlayState extends FlxState
 		if (currentMovingPlayer == 1)
 		{
 			player2.movement(crateGrid);
+			if (FlxG.mouse.justPressed)
+				player2.ClickBlock(crateGrid);
 		}
 		if (currentMovingPlayer == 2)
 		{
 			player3.movement(crateGrid);
+			if (FlxG.mouse.justPressed)
+				player3.ClickBlock(crateGrid);
 		}
 		//when SPACE pressed, which currentMovingPlayer
 		if (FlxG.keys.anyJustPressed([SPACE]))
