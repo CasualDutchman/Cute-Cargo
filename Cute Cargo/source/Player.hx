@@ -117,13 +117,13 @@ class Player extends FlxSprite
 		{
 			if (currentGrid[Std.int(positionClicked.y)][Std.int(positionClicked.x)] == colorCodeToPlayerID[playerID][i])
 			{
-				if (posX - positionClicked.x == -1)
+				if (posX - positionClicked.x == -1 && posY - positionClicked.y == 0)
 					pullingOrientation = MoveOrientation.RIGHT;
-				if (posX - positionClicked.x == 1)
+				if (posX - positionClicked.x == 1 && posY - positionClicked.y == 0)
 					pullingOrientation = MoveOrientation.LEFT;
-				if (posY - positionClicked.y == -1)
+				if (posY - positionClicked.y == -1 && posX - positionClicked.x == 0)
 					pullingOrientation = MoveOrientation.DOWN;
-				if (posY - positionClicked.y == 1)
+				if (posY - positionClicked.y == 1 && posX - positionClicked.x == 0)
 					pullingOrientation = MoveOrientation.UP;
 				
 					trace(pullingOrientation);
