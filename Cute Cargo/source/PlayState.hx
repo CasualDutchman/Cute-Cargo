@@ -17,9 +17,9 @@ class PlayState extends FlxState
 	
 	public var crateGrid:Array<Array<Int>> = new Array<Array<Int>>();
 	//grid preferences, size, starting x y in game
-	public static var gridSizeX:Int = 10;
-	public static var gridSizeY:Int = 8;
-	public static var gridStartX:Int = 10;
+	public static var gridSizeX:Int = 6;
+	public static var gridSizeY:Int = 11;
+	public static var gridStartX:Int = 80;
 	public static var gridStartY:Int = 10;
 	public static var cratePixelSize:Int = 64;
 	
@@ -39,8 +39,8 @@ class PlayState extends FlxState
 	{
 		createGrid();
 		
-		testText = new FlxText(FlxG.width - 280, 20, 0, "[Space] next player\n[R] reset", 20);
-		add(testText);
+		//testText = new FlxText(FlxG.width - 280, 20, 0, "[Space] next player\n[R] reset", 20);
+		//add(testText);
 
 		super.create();
 	}
@@ -121,15 +121,15 @@ class PlayState extends FlxState
 			}
 		}
 		
-		player1 = new Player(10, 10, 0, 0, 0);
+		player1 = new Player(gridStartX, gridStartY, 0, 0, 0);
 		player1.movement(crateGrid);
 		add(player1);
 		
-		player2 = new Player(10 + 64, 10, 1, 1, 0);
+		player2 = new Player(gridStartX + 64, gridStartY, 1, 1, 0);
 		player2.movement(crateGrid);
 		add(player2);
 		
-		player3 = new Player(10 + 128, 10, 2, 2, 0);
+		player3 = new Player(gridStartX + 128, gridStartY, 2, 2, 0);
 		player3.movement(crateGrid);
 		add(player3);
 		
