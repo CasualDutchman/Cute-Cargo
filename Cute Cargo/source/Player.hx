@@ -24,17 +24,21 @@ class Player extends FlxSprite
 	public var pullingBlockPosY:Int = 0;
 	
 	public var pullingOrientation:MoveOrientation = MoveOrientation.NONE;
-		
+	
+	public var sizer:Int;
+	
 	public function new(X:Float, Y:Float, _id:Int, pX:Int, pY:Int) 
 	{
 		super(X, Y);
 		playerID = _id;
 		posX = pX;
 		posY = pY;
-		makeGraphic(64, 64, playerID == 0? FlxColor.PURPLE : ( playerID == 1 ? FlxColor.ORANGE : FlxColor.GREEN)); // placeholder colored block
+		sizer = PlayState.cratePixelSize;
+		loadGraphic(_id == 0 ? AssetPaths.character_purple__png : (_id == 1 ? AssetPaths.character_orange__png : AssetPaths.character_green__png));
+		//makeGraphic(sizer, sizer, playerID == 0? FlxColor.PURPLE : ( playerID == 1 ? FlxColor.ORANGE : FlxColor.GREEN)); // placeholder colored block
 	}
 	
-	public function movement(currentGrid:Array<Array<Int>>)
+	public function movement(currentGrid:Array<Array<Int>>, state:PlayState)
 	{
 		currentGrid[posY][posX] = 0; // reset previous location to air
 		
@@ -76,28 +80,28 @@ class Player extends FlxSprite
 			if (pullingOrientation == MoveOrientation.UP)
 				pullingOrientation = MoveOrientation.NONE;
 				
-			Moving(MoveOrientation.UP, currentGrid);
+			Moving(MoveOrientation.UP, currentGrid, state);
 		}
 		if (_down && posY < (PlayState.gridSizeY - 1))
 		{
 			if (pullingOrientation == MoveOrientation.DOWN)
 				pullingOrientation = MoveOrientation.NONE;
 			
-			Moving(MoveOrientation.DOWN, currentGrid);
+			Moving(MoveOrientation.DOWN, currentGrid, state);
 		}
 		if (_left && posX > 0)
 		{
 			if (pullingOrientation == MoveOrientation.LEFT)
 				pullingOrientation = MoveOrientation.NONE;
 			
-			Moving(MoveOrientation.LEFT, currentGrid);
+			Moving(MoveOrientation.LEFT, currentGrid, state);
 		}
 		if (_right && posX < (PlayState.gridSizeX - 1))
 		{
 			if (pullingOrientation == MoveOrientation.RIGHT)
 				pullingOrientation = MoveOrientation.NONE;
 			
-			Moving(MoveOrientation.RIGHT, currentGrid);
+			Moving(MoveOrientation.RIGHT, currentGrid, state);
 		}
 		
 		currentGrid[posY][posX] = playerID + 2; // set current position to a player grid ID
@@ -138,7 +142,7 @@ class Player extends FlxSprite
 		}
 	}
 	
-	private function Moving(ori:MoveOrientation, currentGrid:Array<Array<Int>>)
+	private function Moving(ori:MoveOrientation, currentGrid:Array<Array<Int>>, state:PlayState)
 	{
 		//this system sets a _x and _y value to the corect value of which way to push/merge
 		//by doing this, we only use 1 function, instead of copy-pasting and chaning in the movement() function
@@ -157,8 +161,8 @@ class Player extends FlxSprite
 			//moving the player;
 			posX += _x;
 			posY += _y;
-			this.x += 64 * _x;
-			this.y += 64 * _y;
+			this.x += sizer * _x;
+			this.y += sizer * _y;
 			
 			if (pullingOrientation != MoveOrientation.NONE)
 			{
@@ -169,6 +173,16 @@ class Player extends FlxSprite
 				pullingBlockPosX = prevPosX;
 				pullingBlockPosY = prevPosY;
 			}
+		}
+		else if (currentGrid[posY + _y][posX + _x] == 12) // coal
+		{
+			posX += _x;
+			posY += _y;
+			this.x += sizer * _x;
+			this.y += sizer * _y;
+			
+			state.trainTimer += 50;
+			state.trainTimerIncrement = 0.00001;
 		}
 		else
 		{
@@ -187,22 +201,22 @@ class Player extends FlxSprite
 								//moving the player
 								posX += _x;
 								posY += _y;
-								this.x += 64 * _x;
-								this.y += 64 * _y;
+								this.x += sizer * _x;
+								this.y += sizer * _y;
 								break;
 							}
 							
 							for (j in 0...2)
 							{
-								if (currentGrid[posY + _y][posX + _x] == primaryPushableToPlayerID[playerID][j] && currentGrid[posY + _y2][posX + _x2] != currentGrid[posY + _y][posX + _x]) // check if first block is pushable by matching player and if second block is not the same as the first one
+								if (currentGrid[posY + _y][posX + _x] == primaryPushableToPlayerID[playerID][j] && currentGrid[posY + _y2][posX + _x2] != currentGrid[posY + _y][posX + _x] && currentGrid[posY + _y2][posX + _x2] != 12) // check if first block is pushable by matching player and if second block is not the same as the first one
 								{
 									currentGrid[posY + _y2][posX + _x2] = currentGrid[posY + _y][posX + _x] + currentGrid[posY + _y2][posX + _x2]; // set second block to the merged block
 									currentGrid[posY + _y][posX + _x] = 0; // set air
 									//moving the player
 									posX += _x;
 									posY += _y;
-									this.x += 64 * _x;
-									this.y += 64 * _y;
+									this.x += sizer * _x;
+									this.y += sizer * _y;
 									break;
 								}
 							}
