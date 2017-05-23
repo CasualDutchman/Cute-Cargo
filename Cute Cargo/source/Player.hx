@@ -5,6 +5,7 @@ import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
 import flixel.input.FlxSwipe;
+import flixel.input.touch.FlxTouch;
 
 class Player extends FlxSprite 
 {
@@ -12,6 +13,10 @@ class Player extends FlxSprite
 	public var colorCodeToPlayerID:Array<Array<Int>> = [[11, 1, 10], [101, 1, 100], [110, 10, 100]];
 	public var primaryPushableToPlayerID:Array<Array<Int>> = [[1, 10], [1, 100], [10, 100]];
 	public var matchingColorID:Array<Int> = [11, 101, 110];
+	
+	var movementArray:Array<MoveOrientation> = [];
+	var prevMovement:FlxPoint = new FlxPoint();
+	var isMoving:Bool = false;
 	
 	public var playerID:Int;
 	public var posX:Int = 0;
@@ -26,7 +31,7 @@ class Player extends FlxSprite
 	public var pullingOrientation:MoveOrientation = MoveOrientation.NONE;
 	
 	public var sizer:Int;
-	
+		
 	public function new(X:Float, Y:Float, _id:Int, pX:Int, pY:Int) 
 	{
 		super(X, Y);
@@ -48,6 +53,8 @@ class Player extends FlxSprite
 		var _left:Bool = false;
 		var _right:Bool = false;
 		
+		/*Old way of moving
+		 * 
 		#if flash
 		_up = FlxG.keys.anyJustPressed([UP, W]);
 		_down = FlxG.keys.anyJustPressed([DOWN, S]);
@@ -64,6 +71,102 @@ class Player extends FlxSprite
 				_down = (swipe.angle <= -160 && swipe.angle >= -180) || (swipe.angle >= 160 && swipe.angle <= 180);
 				_left = (swipe.angle <= -70 && swipe.angle >= -110);
 				_right = (swipe.angle >= 70 && swipe.angle <= 110);
+			}
+		}
+		#end
+		*/
+		
+		//new way of moving
+		#if flash
+		if (FlxG.mouse.pressed && !isMoving)
+		{
+			var mousePoint = PlayState.GetGridPositionByScreenSpace(Std.int(FlxG.mouse.getScreenPosition().x), Std.int(FlxG.mouse.getScreenPosition().y));
+			trace(mousePoint);
+			//if (posX - mousePoint.x == 0)
+			if (prevMovement.x - mousePoint.x == 0)
+			{
+				//if (posY - mousePoint.y == -1)
+				if (prevMovement.y - mousePoint.y == -1)
+				{
+					//_down = true;
+					movementArray.push(MoveOrientation.DOWN);
+				}
+				//if (posY - mousePoint.y == 1)
+				if (prevMovement.y - mousePoint.y == 1)
+				{
+					//_up = true;
+					movementArray.push(MoveOrientation.UP);
+				}
+			}
+			//if (posY - mousePoint.y == 0)
+			if (prevMovement.y - mousePoint.y == 0)
+			{
+				//if (posX - mousePoint.x == -1)
+				if (prevMovement.x - mousePoint.x == -1)
+				{
+					//_right = true;
+					movementArray.push(MoveOrientation.RIGHT);
+				}
+				//if (posX - mousePoint.x == 1)
+				if (prevMovement.x - mousePoint.x == 1)
+				{
+					//_left = true;
+					movementArray.push(MoveOrientation.LEFT);
+				}
+			}
+			prevMovement = mousePoint;
+		}
+		else if (FlxG.mouse.justReleased)
+		{
+			isMoving = true;
+			movementArray.reverse();
+		}
+		
+		if (isMoving)
+		{
+			var todoMovement:MoveOrientation = movementArray.pop();
+			
+			_up = todoMovement == MoveOrientation.UP;
+			_down = todoMovement == MoveOrientation.DOWN;
+			_left = todoMovement == MoveOrientation.LEFT;
+			_right = todoMovement == MoveOrientation.RIGHT;
+			
+			if (movementArray.length <= 0)
+			{
+				isMoving = false;
+			}
+		}
+		#end
+		
+		#if mobile
+		for (touch in FlxG.touches.list)
+		{
+			if (touch.pressed)
+			{
+				var mousePoint = PlayState.GetGridPositionByScreenSpace(touch.screenX, touch.screenY);
+				trace(mousePoint);
+				if (posX - mousePoint.x == 0)
+				{
+					if (posY - mousePoint.y == -1)
+					{
+						_down = true;
+					}
+					if (posY - mousePoint.y == 1)
+					{
+						_up = true;
+					}
+				}
+				if (posY - mousePoint.y == 0)
+				{
+					if (posX - mousePoint.x == -1)
+					{
+						_right = true;
+					}
+					if (posX - mousePoint.x == 1)
+					{
+						_left = true;
+					}
+				}	
 			}
 		}
 		#end
