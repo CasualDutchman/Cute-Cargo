@@ -39,7 +39,7 @@ class Player extends FlxSprite
 		posX = pX;
 		posY = pY;
 		sizer = PlayState.cratePixelSize;
-		loadGraphic(_id == 0 ? AssetPaths.character_purple__png : (_id == 1 ? AssetPaths.character_orange__png : AssetPaths.character_green__png));
+		loadGraphic(_id == 0 ? AssetPaths.purple_crate__png : (_id == 1 ? AssetPaths.orange_crate__png : AssetPaths.green_crate__png));
 		//makeGraphic(sizer, sizer, playerID == 0? FlxColor.PURPLE : ( playerID == 1 ? FlxColor.ORANGE : FlxColor.GREEN)); // placeholder colored block
 	}
 	
@@ -81,40 +81,33 @@ class Player extends FlxSprite
 		if (FlxG.mouse.pressed && !isMoving)
 		{
 			var mousePoint = PlayState.GetGridPositionByScreenSpace(Std.int(FlxG.mouse.getScreenPosition().x), Std.int(FlxG.mouse.getScreenPosition().y));
-			trace(mousePoint);
-			//if (posX - mousePoint.x == 0)
 			if (prevMovement.x - mousePoint.x == 0)
 			{
-				//if (posY - mousePoint.y == -1)
 				if (prevMovement.y - mousePoint.y == -1)
 				{
-					//_down = true;
 					movementArray.push(MoveOrientation.DOWN);
+					prevMovement = mousePoint;
 				}
-				//if (posY - mousePoint.y == 1)
 				if (prevMovement.y - mousePoint.y == 1)
 				{
-					//_up = true;
 					movementArray.push(MoveOrientation.UP);
+					prevMovement = mousePoint;
 				}
 			}
-			//if (posY - mousePoint.y == 0)
 			if (prevMovement.y - mousePoint.y == 0)
 			{
-				//if (posX - mousePoint.x == -1)
 				if (prevMovement.x - mousePoint.x == -1)
 				{
-					//_right = true;
 					movementArray.push(MoveOrientation.RIGHT);
+					prevMovement = mousePoint;
 				}
-				//if (posX - mousePoint.x == 1)
 				if (prevMovement.x - mousePoint.x == 1)
 				{
-					//_left = true;
 					movementArray.push(MoveOrientation.LEFT);
+					prevMovement = mousePoint;
 				}
 			}
-			prevMovement = mousePoint;
+			
 		}
 		else if (FlxG.mouse.justReleased)
 		{

@@ -11,9 +11,12 @@ class MenuState extends FlxState
 	
 	override public function create():Void
 	{
+		FlxG.camera.zoom = 4;
+		
 		//creating a simple button to go to the game
 		buttonPlay = new FlxButton(0, 0, "Play", clickedPlay);
 		buttonPlay.screenCenter();
+		
 		add(buttonPlay);
 		
 		super.create();
@@ -26,6 +29,6 @@ class MenuState extends FlxState
 	
 	private function clickedPlay():Void
 	{
-		FlxG.switchState(new PlayState());
+		FlxG.switchState(new SelectionState());
 	}
 }

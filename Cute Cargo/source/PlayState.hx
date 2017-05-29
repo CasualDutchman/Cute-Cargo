@@ -20,8 +20,8 @@ class PlayState extends FlxState
 	public static var gridSizeX:Int = 8;
 	public static var gridSizeY:Int = 5;
 	public static var gridStartX:Int = 80;
-	public static var gridStartY:Int = 10;
-	public static var cratePixelSize:Int = 190;
+	public static var gridStartY:Int = 80;
+	public static var cratePixelSize:Int = 64;
 	
 	public static var testText:FlxText;
 	
@@ -40,7 +40,13 @@ class PlayState extends FlxState
 	
 	override public function create():Void
 	{
-		//FlxG.camera.zoom = 0.5;
+		gridStartX = Std.int((FlxG.width - (gridSizeX * cratePixelSize)) / 2);
+		gridStartY = Std.int((FlxG.height - (gridSizeY * cratePixelSize)) / 2);
+		
+		var zoomX = FlxG.width / (gridSizeX * cratePixelSize);
+		var zoomY = FlxG.height / (gridSizeY * cratePixelSize);
+		
+		FlxG.camera.zoom = zoomX > zoomY ? zoomY : zoomX;
 		createGrid();
 		
 		trainTimer = 75;
@@ -97,6 +103,12 @@ class PlayState extends FlxState
 		updateGrid();	
 	}
 	
+	public function setGridSize(x:Int, y:Int)
+	{
+		gridSizeX = x;
+		gridSizeY = y;
+	}
+	
 	/**
 	 * This crates players and a grid according to the preferences set at the top
 	 */
@@ -113,14 +125,14 @@ class PlayState extends FlxState
 				
 				if (FlxG.random.bool(10))
 				{
-					crateGrid[y][x] = 12;
+					crateGrid[y][x] = 12; // coal
 				}
 				
 				if (FlxG.random.bool(20))
-					crateGrid[y][x] = 0;
+					crateGrid[y][x] = 0; // empty
 				
 				if (x < 4 && y < 3)
-					crateGrid[y][x] = 0;
+					crateGrid[y][x] = 0; // empty space around players
 			}
 		}
 		
@@ -139,15 +151,15 @@ class PlayState extends FlxState
 			}
 		}
 		
-		player1 = new Player(gridStartX, -25, 0, 0, 0);
+		player1 = new Player(gridStartX, gridStartY, 0, 0, 0);
 		player1.movement(crateGrid, this);
 		add(player1);
 		
-		player2 = new Player(gridStartX + cratePixelSize, -25, 1, 1, 0);
+		player2 = new Player(gridStartX + cratePixelSize, gridStartY, 1, 1, 0);
 		player2.movement(crateGrid, this);
 		add(player2);
 		
-		player3 = new Player(gridStartX + (cratePixelSize * 2), -25, 2, 2, 0);
+		player3 = new Player(gridStartX + (cratePixelSize * 2), gridStartY, 2, 2, 0);
 		player3.movement(crateGrid, this);
 		add(player3);
 		
@@ -202,14 +214,14 @@ class PlayState extends FlxState
 	{
 		switch(id)
 		{
-			case 1: return AssetPaths.red_crate_200__png;
-			case 10: return AssetPaths.blue_crate_200__png;
-			case 100: return AssetPaths.yellow_crate_200__png;
-			case 11: return AssetPaths.purple_crate_200__png;
-			case 101: return AssetPaths.orange_crate_200__png;
-			case 110: return AssetPaths.green_crate_200__png;
+			case 1: return AssetPaths.red_crate__png;
+			case 10: return AssetPaths.blue_crate__png;
+			case 100: return AssetPaths.yellow_crate__png;
+			case 11: return AssetPaths.purple_crate__png;
+			case 101: return AssetPaths.orange_crate__png;
+			case 110: return AssetPaths.green_crate__png;
 			case 12: return AssetPaths.coal__png;
-			default: return AssetPaths.red_crate_200__png;
+			default: return AssetPaths.red_crate__png;
 		}
 	}
 	
