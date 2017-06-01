@@ -53,34 +53,30 @@ class Player extends FlxSprite
 		var _left:Bool = false;
 		var _right:Bool = false;
 		
-		/*Old way of moving
-		 * 
+		var positionTouched:FlxPoint;
+		var isPressing:Bool;
+		var isReleasing:Bool;
+		
+		//moving
+		
 		#if flash
-		_up = FlxG.keys.anyJustPressed([UP, W]);
-		_down = FlxG.keys.anyJustPressed([DOWN, S]);
-		_left = FlxG.keys.anyJustPressed([LEFT, A]);
-		_right = FlxG.keys.anyJustPressed([RIGHT, D]);
+		positionTouched = FlxG.mouse.getScreenPosition();
+		isPressing = FlxG.mouse.pressed;
+		isReleasing = FlxG.mouse.justReleased;
 		#end
 		
 		#if mobile
-		for (swipe in FlxG.swipes)
+		for (touch in FlxG.touches.list)
 		{
-			if (swipe.duration <= 0.25 && swipe.distance >= 60)
-			{
-				_up = (swipe.angle >= -20 && swipe.angle <= 20);
-				_down = (swipe.angle <= -160 && swipe.angle >= -180) || (swipe.angle >= 160 && swipe.angle <= 180);
-				_left = (swipe.angle <= -70 && swipe.angle >= -110);
-				_right = (swipe.angle >= 70 && swipe.angle <= 110);
-			}
+			positionTouched = new FlxPoint(touch.screenX, touch.screenY);
+			isPressing = touch.pressed;
+			isReleasing = touch.justReleased;
 		}
 		#end
-		*/
 		
-		//new way of moving
-		#if flash
-		if (FlxG.mouse.pressed && !isMoving)
+		if (isPressing && !isMoving)
 		{
-			var mousePoint = PlayState.GetGridPositionByScreenSpace(Std.int(FlxG.mouse.getScreenPosition().x), Std.int(FlxG.mouse.getScreenPosition().y));
+			var mousePoint = PlayState.GetGridPositionByScreenSpace(Std.int(positionTouched.x), Std.int(positionTouched.y));
 			if (prevMovement.x - mousePoint.x == 0)
 			{
 				if (prevMovement.y - mousePoint.y == -1)
@@ -109,7 +105,7 @@ class Player extends FlxSprite
 			}
 			
 		}
-		else if (FlxG.mouse.justReleased)
+		else if (isReleasing)
 		{
 			isMoving = true;
 			movementArray.reverse();
@@ -130,40 +126,8 @@ class Player extends FlxSprite
 				isMoving = false;
 			}
 		}
-		#end
 		
-		#if mobile
-		for (touch in FlxG.touches.list)
-		{
-			if (touch.pressed)
-			{
-				var mousePoint = PlayState.GetGridPositionByScreenSpace(touch.screenX, touch.screenY);
-				trace(mousePoint);
-				if (posX - mousePoint.x == 0)
-				{
-					if (posY - mousePoint.y == -1)
-					{
-						_down = true;
-					}
-					if (posY - mousePoint.y == 1)
-					{
-						_up = true;
-					}
-				}
-				if (posY - mousePoint.y == 0)
-				{
-					if (posX - mousePoint.x == -1)
-					{
-						_right = true;
-					}
-					if (posX - mousePoint.x == 1)
-					{
-						_left = true;
-					}
-				}	
-			}
-		}
-		#end
+		//pulling
 		
 		if (pullingOrientation == MoveOrientation.UP || pullingOrientation == MoveOrientation.DOWN)
 			_left = _right = false;
@@ -222,9 +186,9 @@ class Player extends FlxSprite
 					pullingOrientation = MoveOrientation.RIGHT;
 				if (posX - positionClicked.x == 1 && posY - positionClicked.y == 0)
 					pullingOrientation = MoveOrientation.LEFT;
-				if (posY - positionClicked.y == -1 && posX - positionClicked.x == 0)
+				if (posY - positionClicked.x == 0 && posX - positionClicked.y == -1)
 					pullingOrientation = MoveOrientation.DOWN;
-				if (posY - positionClicked.y == 1 && posX - positionClicked.x == 0)
+				if (posY - positionClicked.x == 0 && posX - positionClicked.y == 1)
 					pullingOrientation = MoveOrientation.UP;
 				
 					trace(pullingOrientation);
@@ -253,13 +217,10 @@ class Player extends FlxSprite
 		prevPosX = posX;
 		prevPosY = posY;
 		
-		if (currentGrid[posY + _y][posX + _x] == 0)
+		if (currentGrid[posY + _y][posX + _x] == 0) //If the spot is empty
 		{
 			//moving the player;
-			posX += _x;
-			posY += _y;
-			this.x += sizer * _x;
-			this.y += sizer * _y;
+			MovePlayer(_x, _y);
 			
 			if (pullingOrientation != MoveOrientation.NONE)
 			{
@@ -271,12 +232,9 @@ class Player extends FlxSprite
 				pullingBlockPosY = prevPosY;
 			}
 		}
-		else if (currentGrid[posY + _y][posX + _x] == 12) // coal
+		else if (currentGrid[posY + _y][posX + _x] == 12) // is the spot is coal
 		{
-			posX += _x;
-			posY += _y;
-			this.x += sizer * _x;
-			this.y += sizer * _y;
+			MovePlayer(_x, _y);
 			
 			state.trainTimer += 50;
 			state.trainTimerIncrement = 0.00001;
@@ -296,10 +254,8 @@ class Player extends FlxSprite
 								currentGrid[posY + _y2][posX + _x2] = currentGrid[posY + _y][posX + _x]; // set second block to the first block
 								currentGrid[posY + _y][posX + _x] = 0; // set air
 								//moving the player
-								posX += _x;
-								posY += _y;
-								this.x += sizer * _x;
-								this.y += sizer * _y;
+								
+								MovePlayer(_x, _y);
 								break;
 							}
 							
@@ -310,10 +266,8 @@ class Player extends FlxSprite
 									currentGrid[posY + _y2][posX + _x2] = currentGrid[posY + _y][posX + _x] + currentGrid[posY + _y2][posX + _x2]; // set second block to the merged block
 									currentGrid[posY + _y][posX + _x] = 0; // set air
 									//moving the player
-									posX += _x;
-									posY += _y;
-									this.x += sizer * _x;
-									this.y += sizer * _y;
+									
+									MovePlayer(_x, _y);
 									break;
 								}
 							}
@@ -322,6 +276,14 @@ class Player extends FlxSprite
 				}
 			}
 		}
+	}
+	
+	function MovePlayer(_x:Int, _y:Int)
+	{
+		posX += _x;
+		posY += _y;
+		this.x += sizer * _x;
+		this.y += sizer * _y;
 	}
 }
 

@@ -39,18 +39,24 @@ class PlayState extends FlxState
 	private var player3:Player;
 	private var playerList:Array<Player> = [];
 	
+	var grass:FlxSprite;
+	var grass2:FlxSprite;
+	var carrier:FlxSprite;
+	
+	var carrierBumped:Int = 0;
+	var carrierBumpInterval:Float = 10;
+	
 	override public function create():Void
 	{
-		gridStartX = Std.int((FlxG.width - (gridSizeX * cratePixelSize)) / 2);
-		gridStartY = Std.int((FlxG.height - (gridSizeY * cratePixelSize)) / 2);
+		CreateBackgroundItems();
 		
-		var zoomX = FlxG.width / (gridSizeX * cratePixelSize);
-		var zoomY = FlxG.height / (gridSizeY * cratePixelSize);
+		CreateGrid();
 		
-		FlxG.camera.zoom = zoomX > zoomY ? zoomY : zoomX;
-		createGrid();
+		CreatePlayers();
 		
-		trainTimer = 75;
+		CreateUI();
+		
+		trainTimer = 50;
 		
 		testText = new FlxText(gridStartX - 80, gridStartY + 10, 200, "", 20);
 		testText.color = FlxColor.WHITE;
@@ -67,8 +73,8 @@ class PlayState extends FlxState
 	 */
 	override public function update(elapsed:Float):Void
 	{	
-		trainTimer -= trainTimerIncrement;
-		trainTimerIncrement = ClampFloat(trainTimerIncrement, trainTimerIncrement + 0.000001, 0.35);
+		trainTimer -= (trainTimerIncrement / 60.0);
+		trainTimerIncrement = ClampFloat(trainTimerIncrement + (0.005 / 60.0), 0, 1);
 		testText.text = Std.int(trainTimer) + "";
 		
 		if (trainTimer <= 0)
@@ -76,23 +82,29 @@ class PlayState extends FlxState
 			FlxG.switchState(new MenuState());
 		}
 		
+		UpdateBackGround();
+		
 		playerList[currentMovingPlayer].movement(crateGrid, this);
 		
 		#if flash
-		if (FlxG.mouse.justPressed)
-			playerList[currentMovingPlayer].ClickBlock(crateGrid, FlxG.mouse.screenX, FlxG.mouse.screenY);
+			UpdateFlash();
 		#end
 		
 		#if mobile
-		for (touch in FlxG.touches.list)
-		{
-			if (touch.justPressed)
-			playerList[currentMovingPlayer].ClickBlock(crateGrid, touch.x, touch.y);
-		}	
+			UpdateAndroid();
 		#end
 		
+		super.update(elapsed);
+		
+		updateGrid();	
+	}
+	
+	function UpdateFlash()
+	{
+		if (FlxG.mouse.justPressed)
+			playerList[currentMovingPlayer].ClickBlock(crateGrid, FlxG.mouse.screenX, FlxG.mouse.screenY);
+		
 		//when SPACE pressed, which currentMovingPlayer
-		#if flash
 		if (FlxG.keys.anyJustPressed([SPACE]))
 		{
 			currentMovingPlayer++;
@@ -107,12 +119,15 @@ class PlayState extends FlxState
 		//when escape is pressed, go to first screen
 		if (FlxG.keys.anyJustPressed([ESCAPE]))
 			FlxG.switchState(new MenuState());
-		
-		#end
-		
-		super.update(elapsed);
-		
-		updateGrid();	
+	}
+	
+	function UpdateAndroid()
+	{
+		for (touch in FlxG.touches.list)
+		{
+			if (touch.justPressed)
+				playerList[currentMovingPlayer].ClickBlock(crateGrid, touch.x, touch.y);
+		}
 	}
 	
 	public function setGridSize(x:Int, y:Int)
@@ -121,10 +136,15 @@ class PlayState extends FlxState
 		gridSizeY = y;
 	}
 	
+	function CreateUI()
+	{
+		
+	}
+	
 	/**
-	 * This crates players and a grid according to the preferences set at the top
+	 * This creates a grid according to the preferences set at the top
 	 */
-	private function createGrid()
+	private function CreateGrid()
 	{
 		for (y in 0...gridSizeY)
 		{
@@ -162,7 +182,10 @@ class PlayState extends FlxState
 				}
 			}
 		}
-		
+	}
+	
+	function CreatePlayers()
+	{
 		player1 = new Player(gridStartX, gridStartY, 0, 0, 0);
 		player1.movement(crateGrid, this);
 		add(player1);
@@ -178,6 +201,54 @@ class PlayState extends FlxState
 		playerList.push(player1);
 		playerList.push(player2);
 		playerList.push(player3);
+	}
+	
+	function UpdateBackGround()
+	{
+		grass.y += trainTimer;
+		grass2.y += trainTimer;
+		
+		carrierBumpInterval -= (trainTimer / 60.0);
+		testText.text = Std.int(carrierBumpInterval) + " -/- " + Std.int(trainTimer);
+		
+		if (grass.y >= 1920)
+		{
+			grass.y = grass2.y - grass.graphic.height;
+		}
+		
+		if (grass2.y >= 1920)
+		{
+			grass2.y = grass.y - grass2.graphic.height;
+		}
+		
+		if (carrierBumped != 0)
+		{
+			carrier.x -= carrierBumped;
+			carrierBumped = 0;
+		}
+		
+		if ((FlxG.random.bool(1) && carrierBumpInterval <= 0) && carrierBumped == 0)
+		{
+			var variation:Int = FlxG.random.bool(50) ? -7 : 7;
+			carrier.x += variation;
+			carrierBumpInterval = 100;
+			carrierBumped = variation;
+		}
+	}
+	
+	function CreateBackgroundItems()
+	{
+		grass = new FlxSprite();
+		grass.loadGraphic(AssetPaths.background__png);
+		add(grass);
+		
+		grass2 = new FlxSprite(0, -1920);
+		grass2.loadGraphic(AssetPaths.background__png);
+		add(grass2);
+		
+		carrier = new FlxSprite(140, 160);
+		carrier.loadGraphic(AssetPaths.carrier_wood__png);
+		add(carrier);
 	}
 	
 	public static function GetGridPositionByScreenSpace(_x:Int, _y:Int):FlxPoint

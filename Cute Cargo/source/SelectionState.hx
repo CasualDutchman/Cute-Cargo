@@ -17,7 +17,7 @@ class SelectionState extends FlxState
 		
 		for (i in 0...buttonCount)
 		{
-			var button:FlxButton = new FlxButton(820 + ((i % maxColumns) * 100), 500 + (Math.floor(i / maxColumns) * 70), i + 1 + "", function clicker()
+			var button:FlxButton = new FlxButton((FlxG.width - 80) / 2, 800 + (i * 60), i + 1 + "", function clicker()
 				{ 	
 					var state = new PlayState();
 					state.setGridSize(Math.floor(5 + (1.6 * i)), 5 + i);
