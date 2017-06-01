@@ -126,6 +126,7 @@ class Player extends FlxSprite
 			
 			if (movementArray.length <= 0)
 			{
+				prevMovement = new FlxPoint(posX, posY);
 				isMoving = false;
 			}
 		}

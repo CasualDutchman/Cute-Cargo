@@ -8,6 +8,7 @@ import flixel.text.FlxText;
 import flixel.tile.FlxTilemap;
 import flixel.system.FlxAssets;
 import flixel.FlxObject;
+import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
 
 class PlayState extends FlxState
@@ -51,7 +52,8 @@ class PlayState extends FlxState
 		
 		trainTimer = 75;
 		
-		testText = new FlxText(10, FlxG.height - 30, 200, "", 20);
+		testText = new FlxText(gridStartX - 80, gridStartY + 10, 200, "", 20);
+		testText.color = FlxColor.WHITE;
 		add(testText);
 		
 		//testText = new FlxText(FlxG.width - 280, 20, 0, "[Space] next player\n[R] reset", 20);
@@ -66,8 +68,13 @@ class PlayState extends FlxState
 	override public function update(elapsed:Float):Void
 	{	
 		trainTimer -= trainTimerIncrement;
-		trainTimerIncrement += 0.000001;
+		trainTimerIncrement = ClampFloat(trainTimerIncrement, trainTimerIncrement + 0.000001, 0.35);
 		testText.text = Std.int(trainTimer) + "";
+		
+		if (trainTimer <= 0)
+		{
+			FlxG.switchState(new MenuState());
+		}
 		
 		playerList[currentMovingPlayer].movement(crateGrid, this);
 		
@@ -96,6 +103,11 @@ class PlayState extends FlxState
 		//when R pressed, reset current level
 		if (FlxG.keys.anyJustPressed([R]))
 			FlxG.resetState();
+		
+		//when escape is pressed, go to first screen
+		if (FlxG.keys.anyJustPressed([ESCAPE]))
+			FlxG.switchState(new MenuState());
+		
 		#end
 		
 		super.update(elapsed);
@@ -226,6 +238,22 @@ class PlayState extends FlxState
 	}
 	
 	public static function ClampInt(value:Int, min:Int, max:Int):Int
+	{		
+		if (value < min)
+		{
+			return min;
+		}
+		else if (value > max)
+		{
+			return max;
+		}
+		else
+		{
+			return value;
+		}
+	}
+	
+	public static function ClampFloat(value:Float, min:Float, max:Float):Float
 	{		
 		if (value < min)
 		{
