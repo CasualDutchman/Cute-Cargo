@@ -20,19 +20,19 @@ class PlayState extends FlxState
 	//grid preferences, size, starting x y in game
 	public static var gridSizeX:Int = 8;
 	public static var gridSizeY:Int = 5;
-	public static var gridStartX:Int = 80;
-	public static var gridStartY:Int = 80;
-	public static var cratePixelSize:Int = 64;
+	public static var gridStartX:Int = 140 + 45;
+	public static var gridStartY:Int = 160 + 40;
+	public static var cratePixelSize:Int = 102;
 	
 	public static var testText:FlxText;
 	
 	private var crate:FlxSprite;
-	private var crateGroup:FlxGroup; // this group manages updating the graphix grid
+	private var crateGroup:FlxGroup; // this group manages updating the graphics grid
 	
 	public var currentMovingPlayer:Int = 0; // who's turn?
 	
 	public var trainTimer:Float = 0.0;
-	public var trainTimerIncrement = 0.001;
+	public var trainTimerIncrement:Float = 0.0;
 	
 	private var player1:Player;
 	private var player2:Player;
@@ -61,9 +61,6 @@ class PlayState extends FlxState
 		testText = new FlxText(gridStartX - 80, gridStartY + 10, 200, "", 20);
 		testText.color = FlxColor.WHITE;
 		add(testText);
-		
-		//testText = new FlxText(FlxG.width - 280, 20, 0, "[Space] next player\n[R] reset", 20);
-		//add(testText);
 
 		super.create();
 	}
@@ -74,7 +71,7 @@ class PlayState extends FlxState
 	override public function update(elapsed:Float):Void
 	{	
 		trainTimer -= (trainTimerIncrement / 60.0);
-		trainTimerIncrement = ClampFloat(trainTimerIncrement + (0.005 / 60.0), 0, 1);
+		trainTimerIncrement = ClampFloat(trainTimerIncrement + (0.02 / 60.0), 0, 1);
 		testText.text = Std.int(trainTimer) + "";
 		
 		if (trainTimer <= 0)
@@ -99,9 +96,12 @@ class PlayState extends FlxState
 		updateGrid();	
 	}
 	
+	/**
+	 * This is the update for all the flash components. e.g. mouse events
+	 */
 	function UpdateFlash()
 	{
-		if (FlxG.mouse.justPressed)
+		if (FlxG.mouse.justReleased)
 			playerList[currentMovingPlayer].ClickBlock(crateGrid, FlxG.mouse.screenX, FlxG.mouse.screenY);
 		
 		//when SPACE pressed, which currentMovingPlayer
@@ -121,6 +121,9 @@ class PlayState extends FlxState
 			FlxG.switchState(new MenuState());
 	}
 	
+	/**
+	 * This is the update for all the mobile components. e.g. touch events
+	 */
 	function UpdateAndroid()
 	{
 		for (touch in FlxG.touches.list)
@@ -184,6 +187,9 @@ class PlayState extends FlxState
 		}
 	}
 	
+	/**
+	 * Creating all the players
+	 */
 	function CreatePlayers()
 	{
 		player1 = new Player(gridStartX, gridStartY, 0, 0, 0);
@@ -203,22 +209,27 @@ class PlayState extends FlxState
 		playerList.push(player3);
 	}
 	
+	/**
+	 * Update all background components
+	 */
 	function UpdateBackGround()
 	{
 		grass.y += trainTimer;
 		grass2.y += trainTimer;
 		
 		carrierBumpInterval -= (trainTimer / 60.0);
-		testText.text = Std.int(carrierBumpInterval) + " -/- " + Std.int(trainTimer);
+		//testText.text = trainTimerIncrement + " -/- " + Std.int(trainTimer);
 		
 		if (grass.y >= 1920)
 		{
 			grass.y = grass2.y - grass.graphic.height;
+			grass.loadGraphic(FlxG.random.bool(50) ? AssetPaths.background_2__png : AssetPaths.background__png);
 		}
 		
 		if (grass2.y >= 1920)
 		{
 			grass2.y = grass.y - grass2.graphic.height;
+			grass2.loadGraphic(FlxG.random.bool(50) ? AssetPaths.background_2__png : AssetPaths.background__png);
 		}
 		
 		if (carrierBumped != 0)
@@ -236,6 +247,9 @@ class PlayState extends FlxState
 		}
 	}
 	
+	/**
+	 * Create all background components
+	 */
 	function CreateBackgroundItems()
 	{
 		grass = new FlxSprite();
@@ -243,7 +257,7 @@ class PlayState extends FlxState
 		add(grass);
 		
 		grass2 = new FlxSprite(0, -1920);
-		grass2.loadGraphic(AssetPaths.background__png);
+		grass2.loadGraphic(AssetPaths.background_2__png);
 		add(grass2);
 		
 		carrier = new FlxSprite(140, 160);
@@ -251,6 +265,12 @@ class PlayState extends FlxState
 		add(carrier);
 	}
 	
+	/**
+	 * Get a point on the grid with mouse screen position
+	 * @param	_x mouse X position
+	 * @param	_y mouse Y position
+	 * @return FlxPoint with the grid info
+	 */
 	public static function GetGridPositionByScreenSpace(_x:Int, _y:Int):FlxPoint
 	{
 		_x -= gridStartX;

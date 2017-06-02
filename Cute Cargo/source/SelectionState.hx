@@ -20,7 +20,7 @@ class SelectionState extends FlxState
 			var button:FlxButton = new FlxButton((FlxG.width - 80) / 2, 800 + (i * 60), i + 1 + "", function clicker()
 				{ 	
 					var state = new PlayState();
-					state.setGridSize(Math.floor(5 + (1.6 * i)), 5 + i);
+					state.setGridSize(7, Math.floor(5 + (i * 2)));
 					FlxG.switchState(state); 
 				});
 			add(button);
