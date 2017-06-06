@@ -13,11 +13,11 @@ class SelectionState extends FlxState
 	
 	override public function create():Void
 	{
-		FlxG.camera.zoom = 5;
+		FlxG.camera.zoom = 2;
 		
 		for (i in 0...buttonCount)
 		{
-			var button:FlxButton = new FlxButton((FlxG.width - 80) / 2, 800 + (i * 60), i + 1 + "", function clicker()
+			var button:Button = new Button((FlxG.width - 281) / 2, 370 + (i * 60), i + 1 + "", function clicker()
 				{ 	
 					var state = new PlayState();
 					state.setGridSize(7, Math.floor(5 + (i * 2)));
@@ -26,9 +26,17 @@ class SelectionState extends FlxState
 			add(button);
 		}
 		
+		var returnButton:ButtonSmall = new ButtonSmall((FlxG.width - 64) / 2, FlxG.height - 430, OnReturnClicked, AssetPaths.button_exit__png);
+		add(returnButton);
+		
 		super.create();
 	}
 
+	function OnReturnClicked()
+	{
+		FlxG.switchState(new MenuState());
+	}
+	
 	override public function update(elapsed:Float):Void
 	{
 		super.update(elapsed);

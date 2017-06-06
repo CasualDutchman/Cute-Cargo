@@ -20,9 +20,9 @@ class PlayState extends FlxState
 	//grid preferences, size, starting x y in game
 	public static var gridSizeX:Int = 8;
 	public static var gridSizeY:Int = 5;
-	public static var gridStartX:Int = 140 + 45;
-	public static var gridStartY:Int = 160 + 40;
-	public static var cratePixelSize:Int = 102;
+	public static var gridStartX:Int = 127;
+	public static var gridStartY:Int = 165;
+	public static var cratePixelSize:Int = 78;
 	
 	public static var testText:FlxText;
 	
@@ -39,8 +39,7 @@ class PlayState extends FlxState
 	private var player3:Player;
 	private var playerList:Array<Player> = [];
 	
-	var grass:FlxSprite;
-	var grass2:FlxSprite;
+	var grass:Array<FlxSprite> = new Array<FlxSprite>();
 	var carrier:FlxSprite;
 	
 	var carrierBumped:Int = 0;
@@ -214,22 +213,22 @@ class PlayState extends FlxState
 	 */
 	function UpdateBackGround()
 	{
-		grass.y += trainTimer;
-		grass2.y += trainTimer;
+		grass[0].y += trainTimer / 3;
+		grass[1].y += trainTimer / 3;
 		
 		carrierBumpInterval -= (trainTimer / 60.0);
 		//testText.text = trainTimerIncrement + " -/- " + Std.int(trainTimer);
 		
-		if (grass.y >= 1920)
+		if (grass[0].y >= 1200)
 		{
-			grass.y = grass2.y - grass.graphic.height;
-			grass.loadGraphic(FlxG.random.bool(50) ? AssetPaths.background_2__png : AssetPaths.background__png);
+			grass[0].y = grass[1].y - grass[0].graphic.height;
+			grass[0].loadGraphic(FlxG.random.bool(50) ? AssetPaths.background__png : AssetPaths.background__png);
 		}
 		
-		if (grass2.y >= 1920)
+		if (grass[1].y >= 1200)
 		{
-			grass2.y = grass.y - grass2.graphic.height;
-			grass2.loadGraphic(FlxG.random.bool(50) ? AssetPaths.background_2__png : AssetPaths.background__png);
+			grass[1].y = grass[0].y - grass[1].graphic.height;
+			grass[1].loadGraphic(FlxG.random.bool(50) ? AssetPaths.background__png : AssetPaths.background__png);
 		}
 		
 		if (carrierBumped != 0)
@@ -252,15 +251,15 @@ class PlayState extends FlxState
 	 */
 	function CreateBackgroundItems()
 	{
-		grass = new FlxSprite();
-		grass.loadGraphic(AssetPaths.background__png);
-		add(grass);
+		grass.push(new FlxSprite());
+		grass[0].loadGraphic(AssetPaths.background__png);
+		add(grass[0]);
 		
-		grass2 = new FlxSprite(0, -1920);
-		grass2.loadGraphic(AssetPaths.background_2__png);
-		add(grass2);
+		grass.push(new FlxSprite(0, -grass[0].height));
+		grass[1].loadGraphic(AssetPaths.background__png);
+		add(grass[1]);
 		
-		carrier = new FlxSprite(140, 160);
+		carrier = new FlxSprite(100, 140);
 		carrier.loadGraphic(AssetPaths.carrier_wood__png);
 		add(carrier);
 	}
@@ -271,7 +270,7 @@ class PlayState extends FlxState
 	 * @param	_y mouse Y position
 	 * @return FlxPoint with the grid info
 	 */
-	public static function GetGridPositionByScreenSpace(_x:Int, _y:Int):FlxPoint
+	public static function GetGridPositionByScreenSpace(_x:Float, _y:Float):FlxPoint
 	{
 		_x -= gridStartX;
 		_y -= gridStartY;

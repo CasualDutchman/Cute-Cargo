@@ -76,7 +76,7 @@ class Player extends FlxSprite
 		
 		if (isPressing && !isMoving)
 		{
-			var mousePoint = PlayState.GetGridPositionByScreenSpace(Std.int(positionTouched.x), Std.int(positionTouched.y));
+			var mousePoint = PlayState.GetGridPositionByScreenSpace(positionTouched.x, positionTouched.y);
 			if (prevMovement.x - mousePoint.x == 0)
 			{
 				if (prevMovement.y - mousePoint.y == -1)
@@ -108,6 +108,7 @@ class Player extends FlxSprite
 		else if (isReleasing)
 		{
 			isMoving = true;
+			prevMovement = new FlxPoint(posX, posY);
 			movementArray.reverse();
 		}
 		

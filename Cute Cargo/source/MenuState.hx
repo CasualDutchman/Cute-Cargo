@@ -7,14 +7,14 @@ import flixel.math.FlxPoint;
 
 class MenuState extends FlxState
 {
-	private var buttonPlay:FlxButton;
+	private var buttonPlay:Button;
 	
 	override public function create():Void
 	{
-		FlxG.camera.zoom = 4;
+		FlxG.camera.zoom = 2;
 		
 		//creating a simple button to go to the game
-		buttonPlay = new FlxButton(0, 0, "Play", clickedPlay);
+		buttonPlay = new Button(0, 0, "Play", clickedPlay);
 		buttonPlay.screenCenter();
 		
 		add(buttonPlay);
