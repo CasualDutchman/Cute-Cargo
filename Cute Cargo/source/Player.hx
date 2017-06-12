@@ -14,8 +14,8 @@ class Player extends FlxSprite
 	public var primaryPushableToPlayerID:Array<Array<Int>> = [[1, 10], [1, 100], [10, 100]];
 	public var matchingColorID:Array<Int> = [11, 101, 110];
 	
-	var movementArray:Array<MoveOrientation> = [];
-	var prevMovement:FlxPoint = new FlxPoint();
+	public var movementArray:Array<MoveOrientation> = [];
+	public var prevMovement:FlxPoint = new FlxPoint();
 	var isMoving:Bool = false;
 	
 	public var playerID:Int;
@@ -31,7 +31,9 @@ class Player extends FlxSprite
 	public var pullingOrientation:MoveOrientation = MoveOrientation.NONE;
 	
 	public var sizer:Int;
-		
+	
+	var movementTimer:Float = 0;
+	
 	public function new(X:Float, Y:Float, _id:Int, pX:Int, pY:Int) 
 	{
 		super(X, Y);
@@ -53,9 +55,9 @@ class Player extends FlxSprite
 		var _left:Bool = false;
 		var _right:Bool = false;
 		
-		var positionTouched:FlxPoint;
-		var isPressing:Bool;
-		var isReleasing:Bool;
+		var positionTouched:FlxPoint = new FlxPoint();
+		var isPressing:Bool = false;
+		var isReleasing:Bool = false;
 		
 		//moving
 		
@@ -108,11 +110,15 @@ class Player extends FlxSprite
 		else if (isReleasing)
 		{
 			isMoving = true;
-			prevMovement = new FlxPoint(posX, posY);
 			movementArray.reverse();
 		}
 		
 		if (isMoving)
+		{
+			movementTimer += 1.0;
+		}
+		
+		if (isMoving && movementTimer >= (60 * PublicVariables.playerMoveUpdate))
 		{
 			var todoMovement:MoveOrientation = movementArray.pop();
 			
@@ -121,9 +127,10 @@ class Player extends FlxSprite
 			_left = todoMovement == MoveOrientation.LEFT;
 			_right = todoMovement == MoveOrientation.RIGHT;
 			
+			movementTimer = 0;
+			
 			if (movementArray.length <= 0)
 			{
-				prevMovement = new FlxPoint(posX, posY);
 				isMoving = false;
 			}
 		}
@@ -237,7 +244,11 @@ class Player extends FlxSprite
 		{
 			MovePlayer(_x, _y);
 			
-			state.trainTimer += 50;
+			state.trainTimer += PublicVariables.coalAddValue;
+			if (state.trainTimer >= PublicVariables.trainMaxSpeed && PublicVariables.trainMaxSpeed != 0)
+			{
+				state.trainTimer = PublicVariables.trainMaxSpeed;
+			}
 			state.trainTimerIncrement = 0.00001;
 		}
 		else
@@ -285,6 +296,7 @@ class Player extends FlxSprite
 		posY += _y;
 		this.x += sizer * _x;
 		this.y += sizer * _y;
+		prevMovement = new FlxPoint(posX, posY);
 	}
 }
 

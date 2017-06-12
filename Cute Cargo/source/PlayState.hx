@@ -45,6 +45,10 @@ class PlayState extends FlxState
 	var carrierBumped:Int = 0;
 	var carrierBumpInterval:Float = 10;
 	
+	//Debug options
+	private var debugGridText:FlxGroup;
+	private var debugText:FlxText;
+	
 	override public function create():Void
 	{
 		CreateBackgroundItems();
@@ -55,11 +59,14 @@ class PlayState extends FlxState
 		
 		CreateUI();
 		
-		trainTimer = 50;
+		trainTimer = PublicVariables.trainStartSpeed;
 		
-		testText = new FlxText(gridStartX - 80, gridStartY + 10, 200, "", 20);
-		testText.color = FlxColor.WHITE;
-		add(testText);
+		if (PublicVariables.UseDebug)
+		{
+			testText = new FlxText(gridStartX - 80, gridStartY + 10, 200, "", 20);
+			testText.color = FlxColor.WHITE;
+			add(testText); 
+		}
 
 		super.create();
 	}
@@ -70,8 +77,10 @@ class PlayState extends FlxState
 	override public function update(elapsed:Float):Void
 	{	
 		trainTimer -= (trainTimerIncrement / 60.0);
-		trainTimerIncrement = ClampFloat(trainTimerIncrement + (0.02 / 60.0), 0, 1);
-		testText.text = Std.int(trainTimer) + "";
+		trainTimerIncrement = MathHelper.ClampFloat(trainTimerIncrement + (PublicVariables.trainIncrement / 60.0), 0, PublicVariables.trainMaxIncrement);
+		
+		if(PublicVariables.UseDebug)
+			testText.text = Std.int(trainTimer) + "";
 		
 		if (trainTimer <= 0)
 		{
@@ -81,6 +90,9 @@ class PlayState extends FlxState
 		UpdateBackGround();
 		
 		playerList[currentMovingPlayer].movement(crateGrid, this);
+		
+		if(PublicVariables.UseDebug)
+			debugText.text = playerList[currentMovingPlayer].prevMovement + " - (" + playerList[currentMovingPlayer].posX + " - " + playerList[currentMovingPlayer].posY + ")";
 		
 		#if flash
 			UpdateFlash();
@@ -100,6 +112,7 @@ class PlayState extends FlxState
 	 */
 	function UpdateFlash()
 	{
+		#if flash
 		if (FlxG.mouse.justReleased)
 			playerList[currentMovingPlayer].ClickBlock(crateGrid, FlxG.mouse.screenX, FlxG.mouse.screenY);
 		
@@ -118,6 +131,8 @@ class PlayState extends FlxState
 		//when escape is pressed, go to first screen
 		if (FlxG.keys.anyJustPressed([ESCAPE]))
 			FlxG.switchState(new MenuState());
+		
+		#end
 	}
 	
 	/**
@@ -126,21 +141,25 @@ class PlayState extends FlxState
 	function UpdateAndroid()
 	{
 		for (touch in FlxG.touches.list)
-		{
+		{			
 			if (touch.justPressed)
 				playerList[currentMovingPlayer].ClickBlock(crateGrid, touch.x, touch.y);
 		}
 	}
 	
-	public function setGridSize(x:Int, y:Int)
+	public function setGridSize(x:Float, y:Float)
 	{
-		gridSizeX = x;
-		gridSizeY = y;
+		gridSizeX = Std.int(x);
+		gridSizeY = Std.int(y);
 	}
 	
 	function CreateUI()
 	{
-		
+		if (PublicVariables.UseDebug)
+		{
+			debugText = new FlxText(0, 0, 0, "", 20);
+			add(debugText);
+		}
 	}
 	
 	/**
@@ -154,13 +173,11 @@ class PlayState extends FlxState
 			{
 				if (x == 0)
 					crateGrid.push(new Array<Int>());
-					
+				
 				crateGrid[y][x] = crateIDList[FlxG.random.int(0, 2)];
 				
 				if (FlxG.random.bool(10))
-				{
 					crateGrid[y][x] = 12; // coal
-				}
 				
 				if (FlxG.random.bool(20))
 					crateGrid[y][x] = 0; // empty
@@ -171,6 +188,7 @@ class PlayState extends FlxState
 		}
 		
 		crateGroup = new FlxGroup();
+		debugGridText = new FlxGroup();
 		
 		for (y in 0...gridSizeY)
 		{
@@ -213,19 +231,18 @@ class PlayState extends FlxState
 	 */
 	function UpdateBackGround()
 	{
-		grass[0].y += trainTimer / 3;
-		grass[1].y += trainTimer / 3;
+		grass[0].y += trainTimer / 4;
+		grass[1].y += trainTimer / 4;
 		
 		carrierBumpInterval -= (trainTimer / 60.0);
-		//testText.text = trainTimerIncrement + " -/- " + Std.int(trainTimer);
 		
-		if (grass[0].y >= 1200)
+		if (grass[0].y >= 1280)
 		{
 			grass[0].y = grass[1].y - grass[0].graphic.height;
 			grass[0].loadGraphic(FlxG.random.bool(50) ? AssetPaths.background__png : AssetPaths.background__png);
 		}
 		
-		if (grass[1].y >= 1200)
+		if (grass[1].y >= 1280)
 		{
 			grass[1].y = grass[0].y - grass[1].graphic.height;
 			grass[1].loadGraphic(FlxG.random.bool(50) ? AssetPaths.background__png : AssetPaths.background__png);
@@ -278,8 +295,8 @@ class PlayState extends FlxState
 		var xOnGrid = Math.floor(_x / cratePixelSize);
 		var yOnGrid = Math.floor(_y / cratePixelSize);
 		
-		xOnGrid = ClampInt(xOnGrid, 0, gridSizeX - 1);
-		yOnGrid = ClampInt(yOnGrid, 0, gridSizeY - 1);
+		xOnGrid = MathHelper.ClampInt(xOnGrid, 0, gridSizeX - 1);
+		yOnGrid = MathHelper.ClampInt(yOnGrid, 0, gridSizeY - 1);
 		
 		return new FlxPoint(xOnGrid, yOnGrid);
 	}
@@ -307,6 +324,24 @@ class PlayState extends FlxState
 		}
 		
 		add(crateGroup);
+		
+		if (PublicVariables.UseDebug)
+		{
+			debugGridText.destroy();
+			
+			debugGridText = new FlxGroup();
+			
+			for (y in 0...gridSizeY)
+			{
+				for (x in 0...gridSizeX)
+				{				
+					var newText = new FlxText(gridStartX + (x * cratePixelSize), gridStartY + (y * cratePixelSize), 0, crateGrid[y][x] + "", 24);
+					debugGridText.add(newText);
+				}
+			}
+			
+			add(debugGridText);
+		}
 	}
 	
 	/**
@@ -327,35 +362,5 @@ class PlayState extends FlxState
 		}
 	}
 	
-	public static function ClampInt(value:Int, min:Int, max:Int):Int
-	{		
-		if (value < min)
-		{
-			return min;
-		}
-		else if (value > max)
-		{
-			return max;
-		}
-		else
-		{
-			return value;
-		}
-	}
 	
-	public static function ClampFloat(value:Float, min:Float, max:Float):Float
-	{		
-		if (value < min)
-		{
-			return min;
-		}
-		else if (value > max)
-		{
-			return max;
-		}
-		else
-		{
-			return value;
-		}
-	}
 }

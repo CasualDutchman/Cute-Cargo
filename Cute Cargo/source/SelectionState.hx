@@ -8,24 +8,19 @@ import flixel.util.FlxAxes;
 import flixel.FlxSprite;
 
 class SelectionState extends FlxState
-{	
-	var maxColumns = 3;
-	var buttonCount = 6;
-	
-	public var activeButtons:Int = 3;
-	
+{			
 	override public function create():Void
 	{
-		FlxG.camera.zoom = 2;
+		FlxG.camera.zoom = 1.5;
 		
-		for (i in 0...buttonCount)
+		for (i in 0...PublicVariables.levelSizes.length)
 		{
-			if (i < activeButtons)
+			if (i < PublicVariables.levelActiveLevels)
 			{
 				var button:Button = new Button((FlxG.width - 281) / 2, 370 + (i * 60), i + 1 + "", function clicker()
 					{ 	
 						var state = new PlayState();
-						state.setGridSize(7, Math.floor(5 + (i * 2)));
+						state.setGridSize(PublicVariables.levelSizes[i].x, PublicVariables.levelSizes[i].y);
 						FlxG.switchState(state); 
 					});
 				add(button);
@@ -38,12 +33,12 @@ class SelectionState extends FlxState
 			}
 		}
 		
-		var returnButton:ButtonSmall = new ButtonSmall((FlxG.width - 64) / 2, FlxG.height - 430, OnReturnClicked, AssetPaths.button_exit__png);
+		var returnButton:ButtonSmall = new ButtonSmall((FlxG.width - 64) / 2, FlxG.height - 530, OnReturnClicked, AssetPaths.button_exit__png);
 		add(returnButton);
 		
 		
 		//dialogueBox added for first explaning
-		var box = new DialogueBox((FlxG.width - 281) / 2, FlxG.height - 500, "I am some text");
+		var box = new DialogueBox((FlxG.width - 500) / 2, 350, "Hint", "This screen will guide you to a level.\nIf a button is dark it can not be pushed, otherwise you can push it to go to that level.");
 		add(box);
 		
 		super.create();
