@@ -20,9 +20,9 @@ class PlayState extends FlxState
 	//grid preferences, size, starting x y in game
 	public static var gridSizeX:Int = 8;
 	public static var gridSizeY:Int = 5;
-	public static var gridStartX:Int = 127;
+	public static var gridStartX:Int = 120;
 	public static var gridStartY:Int = 165;
-	public static var cratePixelSize:Int = 78;
+	public static var cratePixelSize:Int = 80;
 	
 	public static var testText:FlxText;
 	
@@ -351,14 +351,14 @@ class PlayState extends FlxState
 	{
 		switch(id)
 		{
-			case 1: return AssetPaths.red_crate__png;
-			case 10: return AssetPaths.blue_crate__png;
-			case 100: return AssetPaths.yellow_crate__png;
-			case 11: return AssetPaths.purple_crate__png;
-			case 101: return AssetPaths.orange_crate__png;
-			case 110: return AssetPaths.green_crate__png;
+			case 1: return AssetPaths.red_block__png;
+			case 10: return AssetPaths.blue_block__png;
+			case 100: return AssetPaths.yellow_block__png;
+			case 11: return AssetPaths.purple_block__png;
+			case 101: return AssetPaths.orange_block__png;
+			case 110: return AssetPaths.green_block__png;
 			case 12: return AssetPaths.coal__png;
-			default: return AssetPaths.red_crate__png;
+			default: return AssetPaths.red_block__png;
 		}
 	}
 	
