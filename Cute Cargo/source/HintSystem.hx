@@ -12,6 +12,7 @@ class HintSystem
 	public var BasedColorTimer:Int;
 	public var BasedColor:Bool;
 	public var warnedSpeed:Bool;
+	public var firstColorExplain:Bool;
 	
 	public function new()
 	{

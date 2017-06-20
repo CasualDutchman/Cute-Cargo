@@ -13,17 +13,30 @@ class SelectionState extends FlxState
 	
 	override public function create():Void
 	{
-		FlxG.camera.zoom = 1.5;
+		FlxG.camera.zoom = 1;
 		
 		for (i in 0...PublicVariables.levelSizes.length)
 		{
 			if (i < PublicVariables.levelActiveLevels)
 			{
 				var button:Button = new Button((FlxG.width - 281) / 2, 370 + (i * 60), i + 1 + "", function clicker()
-					{ 	
-						var state = new PlayState();
-						state.setGridSize(PublicVariables.levelSizes[i].x, PublicVariables.levelSizes[i].y);
-						FlxG.switchState(state); 
+					{ 
+						//===================================================
+						for (sound in FlxG.sound.defaultMusicGroup.sounds) // Lynn
+						{
+							sound.stop();
+						}
+						
+						if (i == 0)
+						{
+							FlxG.switchState(new CoachState());
+						}
+						else
+						{
+							var state = new PlayState();
+							state.setGridSize(PublicVariables.levelSizes[i].x, PublicVariables.levelSizes[i].y);
+							FlxG.switchState(state); 
+						}
 					});
 				add(button);
 			}
@@ -40,7 +53,7 @@ class SelectionState extends FlxState
 		
 		
 		//dialogueBox added for first explaning
-		box = new DialogueBox((FlxG.width - 500) / 2, 350, "Hint", "This screen will guide you to a level.\nIf a button is dark it can not be pushed, otherwise you can push it to go to that level.", OnExit);
+		box = new DialogueBox((FlxG.width - 500) / 2, 550, "Hint", "This is the level selection screen. Here you can choose the levels you want to play. Click on the first level to begin.", OnExit);
 		add(box);
 		
 		super.create();

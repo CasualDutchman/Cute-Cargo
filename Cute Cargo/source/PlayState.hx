@@ -251,8 +251,13 @@ class PlayState extends FlxState
 		add(speedClock);
 		
 		speedClockArrow = new FlxSprite(FlxG.width - 120, 10);
+		speedClockArrow.antialiasing = true;
 		speedClockArrow.loadGraphic(AssetPaths.Arrow_03__png);
 		add(speedClockArrow);
+		
+		var speedClockArrowDot = new FlxSprite(FlxG.width - 120, 10);
+		speedClockArrowDot.loadGraphic(AssetPaths.Arrow_Dot__png);
+		add(speedClockArrowDot);
 		
 		if (PublicVariables.UseDebug)
 		{
@@ -264,7 +269,7 @@ class PlayState extends FlxState
 	/**
 	 * Change the current moving player
 	 */
-	function ChangeActivePlayer()
+	public function ChangeActivePlayer()
 	{
 		currentMovingPlayer++;
 		if (currentMovingPlayer >= 3)

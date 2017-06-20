@@ -1,11 +1,9 @@
 package;
 
 import flixel.FlxState;
-import flixel.ui.FlxButton;
 import flixel.FlxG;
-import flixel.math.FlxPoint;
 
-class MenuState extends FlxState
+class CoachState extends FlxState
 {
 	private var buttonPlay:Button;
 	
@@ -14,11 +12,15 @@ class MenuState extends FlxState
 		FlxG.camera.zoom = 1;
 		
 		//===================================================
-		FlxG.sound.playMusic(AssetPaths.POL_candy_valley_short__wav, 0.1); // Lynn
+		//FlxG.sound.playMusic(AssetPaths.POL_candy_valley_short__wav, 0.1); // Lynn
+		
+		var box = new DialogueBox((FlxG.width - 500) / 2, 550, "Coach", "Hi I am the coach", clickedPlay);
+		add(box);
 		
 		//creating a simple button to go to the game
 		buttonPlay = new Button(0, 0, "Play", clickedPlay);
 		buttonPlay.screenCenter();
+		buttonPlay.y += 100;
 		
 		add(buttonPlay);
 		
@@ -40,6 +42,9 @@ class MenuState extends FlxState
 	
 	function GoToSelect()
 	{
-		FlxG.switchState(new SelectionState());
+		var state = new PlayState();
+		state.setGridSize(PublicVariables.levelSizes[0].x, PublicVariables.levelSizes[0].y);
+		FlxG.switchState(state); 
 	}
+	
 }

@@ -32,7 +32,11 @@ class Player extends FlxSprite
 	
 	public var sizer:Int;
 	
+	var movementSteps:Int;
+	
 	var movementTimer:Float = 0;
+	
+	var changeCharacter:Bool;
 	
 	public function new(X:Float, Y:Float, _id:Int, pX:Int, pY:Int) 
 	{
@@ -85,11 +89,23 @@ class Player extends FlxSprite
 				{
 					movementArray.push(MoveOrientation.DOWN);
 					prevMovement = mousePoint;
+					if (movementArray.length >= 10)
+					{
+						isMoving = true;
+						movementArray.reverse();
+						changeCharacter = true;
+					}
 				}
 				if (prevMovement.y - mousePoint.y == 1)
 				{
 					movementArray.push(MoveOrientation.UP);
 					prevMovement = mousePoint;
+					if (movementArray.length >= 10)
+					{
+						isMoving = true;
+						movementArray.reverse();
+						changeCharacter = true;
+					}
 				}
 			}
 			if (prevMovement.y - mousePoint.y == 0)
@@ -98,19 +114,35 @@ class Player extends FlxSprite
 				{
 					movementArray.push(MoveOrientation.RIGHT);
 					prevMovement = mousePoint;
+					if (movementArray.length >= 10)
+					{
+						isMoving = true;
+						movementArray.reverse();
+						changeCharacter = true;
+					}
 				}
 				if (prevMovement.x - mousePoint.x == 1)
 				{
 					movementArray.push(MoveOrientation.LEFT);
 					prevMovement = mousePoint;
+					if (movementArray.length >= 10)
+					{
+						isMoving = true;
+						movementArray.reverse();
+						changeCharacter = true;
+					}
 				}
 			}
-			
 		}
 		else if (isReleasing)
 		{
 			isMoving = true;
 			movementArray.reverse();
+			if (!state.hintSystem.firstColorExplain && movementArray.length >= 1)
+			{
+				state.GiveHint("You can move blocks based on your player's color.");
+				state.hintSystem.firstColorExplain = true;
+			}
 		}
 		
 		if (isMoving)
@@ -131,6 +163,11 @@ class Player extends FlxSprite
 			
 			if (movementArray.length <= 0)
 			{
+				if (changeCharacter)
+				{
+					state.ChangeActivePlayer();
+				}
+				
 				isMoving = false;
 			}
 		}

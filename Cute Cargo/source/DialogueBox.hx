@@ -22,13 +22,14 @@ class DialogueBox extends FlxGroup
 		add(spr);
 		
 		titleBox = new FlxText(_x + 33, _y + 33, 0, _title, 24);
-		//titleBox.addFormat(new FlxTextFormat(FlxColor.BLACK, true));
 		titleBox.bold = true;
+		titleBox.setFormat(AssetPaths.Freshman__ttf, 28, FlxColor.BLACK);
 		titleBox.color = FlxColor.BLACK;
 		add(titleBox);
 		
 		textBox = new FlxText(_x + 33, _y + 80, 0, _text, 20);
 		textBox.fieldWidth = 420;
+		textBox.setFormat(AssetPaths.Freshman__ttf, 28, FlxColor.BLACK);
 		textBox.color = FlxColor.BLACK;
 		add(textBox);
 		
