@@ -13,7 +13,7 @@ class PublicVariables
 	public static var trainStartSpeed:Int = 50;
 	
 	/** Max speed of the train || 0 if there is no limit */
-	public static var trainMaxSpeed:Int = 0;
+	public static var trainMaxSpeed:Int = 120;
 	
 	/** Speed increment handles in what pace the train slows down. This number will be added to itself, and that number will be subtracted from the speed*/
 	public static var trainIncrement:Float = 0.02;

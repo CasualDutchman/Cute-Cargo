@@ -29,6 +29,8 @@ class MenuState extends FlxState
 	
 	private function clickedPlay():Void
 	{
+		FlxG.sound.play(AssetPaths.NFF_bump__wav);	
+		
 		FlxG.switchState(new SelectionState());
 	}
 }

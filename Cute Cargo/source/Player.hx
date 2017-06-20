@@ -173,7 +173,7 @@ class Player extends FlxSprite
 			Moving(MoveOrientation.RIGHT, currentGrid, state);
 		}
 		
-		currentGrid[posY][posX] = playerID + 2; // set current position to a player grid ID
+		//currentGrid[posY][posX] = playerID + 2; // set current position to a player grid ID
 	}
 
 	public function ClickBlock(currentGrid:Array<Array<Int>>, clickX:Int, clickY:Int)
@@ -228,7 +228,7 @@ class Player extends FlxSprite
 		if (currentGrid[posY + _y][posX + _x] == 0) //If the spot is empty
 		{
 			//moving the player;
-			MovePlayer(_x, _y);
+			MovePlayer(_x, _y, state, currentGrid);
 			
 			if (pullingOrientation != MoveOrientation.NONE)
 			{
@@ -240,16 +240,11 @@ class Player extends FlxSprite
 				pullingBlockPosY = prevPosY;
 			}
 		}
-		else if (currentGrid[posY + _y][posX + _x] == 12) // is the spot is coal
+		else if (currentGrid[posY + _y][posX + _x] == 12) // if the spot is coal
 		{
-			MovePlayer(_x, _y);
+			state.AddCoal(PublicVariables.coalAddValue);
 			
-			state.trainTimer += PublicVariables.coalAddValue;
-			if (state.trainTimer >= PublicVariables.trainMaxSpeed && PublicVariables.trainMaxSpeed != 0)
-			{
-				state.trainTimer = PublicVariables.trainMaxSpeed;
-			}
-			state.trainTimerIncrement = 0.00001;
+			MovePlayer(_x, _y, state, currentGrid);
 		}
 		else
 		{
@@ -267,7 +262,7 @@ class Player extends FlxSprite
 								currentGrid[posY + _y][posX + _x] = 0; // set air
 								//moving the player
 								
-								MovePlayer(_x, _y);
+								MovePlayer(_x, _y, state, currentGrid);
 								break;
 							}
 							
@@ -279,9 +274,20 @@ class Player extends FlxSprite
 									currentGrid[posY + _y][posX + _x] = 0; // set air
 									//moving the player
 									
-									MovePlayer(_x, _y);
+									MovePlayer(_x, _y, state, currentGrid);
 									break;
 								}
+							}
+						}
+					}
+					else{
+						if (!state.hintSystem.BasedColor)
+						{
+							state.hintSystem.BasedColorTimer++;
+							if (state.hintSystem.BasedColorTimer >= 5)
+							{
+								state.GiveHint("You won't be able to move those blocks, because they are not based on your color");
+								state.hintSystem.BasedColor = true;
 							}
 						}
 					}
@@ -290,13 +296,17 @@ class Player extends FlxSprite
 		}
 	}
 	
-	function MovePlayer(_x:Int, _y:Int)
+	function MovePlayer(_x:Int, _y:Int, state:PlayState, currentGrid:Array<Array<Int>>)
 	{
 		posX += _x;
 		posY += _y;
 		this.x += sizer * _x;
 		this.y += sizer * _y;
 		prevMovement = new FlxPoint(posX, posY);
+		
+		currentGrid[posY][posX] = playerID + 2;
+		
+		state.updateGrid();
 	}
 }
 

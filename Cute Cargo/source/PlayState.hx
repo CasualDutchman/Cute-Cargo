@@ -49,6 +49,22 @@ class PlayState extends FlxState
 	private var debugGridText:FlxGroup;
 	private var debugText:FlxText;
 	
+	var hints:DialogueBox;
+	var hinttimer:Float = 0;
+	var showHint:Bool;
+	
+	public var hintSystem:HintSystem;
+	
+	var coalCounter:Int;
+	var coalMax:Int;
+	var coalCounterSprite:FlxSprite;
+	var coalCounterText:FlxText;
+	
+	var speedClock:FlxSprite;
+	var speedClockArrow:FlxSprite;
+	
+	var activePlayerSprite:Array<FlxSprite> = [];
+	
 	override public function create():Void
 	{
 		CreateBackgroundItems();
@@ -56,8 +72,6 @@ class PlayState extends FlxState
 		CreateGrid();
 		
 		CreatePlayers();
-		
-		CreateUI();
 		
 		trainTimer = PublicVariables.trainStartSpeed;
 		
@@ -68,6 +82,14 @@ class PlayState extends FlxState
 			add(testText); 
 		}
 
+		hintSystem = new HintSystem();
+		
+		updateGrid();
+		
+		CreateUI();
+		
+		GiveHint("Move by making a path with your fingers", true);
+		
 		super.create();
 	}
 	
@@ -79,6 +101,12 @@ class PlayState extends FlxState
 		trainTimer -= (trainTimerIncrement / 60.0);
 		trainTimerIncrement = MathHelper.ClampFloat(trainTimerIncrement + (PublicVariables.trainIncrement / 60.0), 0, PublicVariables.trainMaxIncrement);
 		
+		if (trainTimer <= 20 && !hintSystem.warnedSpeed)
+		{
+			GiveHint("Hurry up, the train is slowing down. You need " + (coalMax - coalCounter) + " coal!");
+			hintSystem.warnedSpeed = true;
+		}
+		
 		if(PublicVariables.UseDebug)
 			testText.text = Std.int(trainTimer) + "";
 		
@@ -88,6 +116,8 @@ class PlayState extends FlxState
 		}
 		
 		UpdateBackGround();
+		
+		UpdateUI();
 		
 		playerList[currentMovingPlayer].movement(crateGrid, this);
 		
@@ -104,7 +134,24 @@ class PlayState extends FlxState
 		
 		super.update(elapsed);
 		
-		updateGrid();	
+	}
+	
+	public function AddCoal(value:Float)
+	{
+		trainTimer += value;
+		if (trainTimer >= PublicVariables.trainMaxSpeed && PublicVariables.trainMaxSpeed != 0)
+		{
+			trainTimer = PublicVariables.trainMaxSpeed;
+		}
+		trainTimerIncrement = 0.00001;
+		
+		//if (!hintSystem.CoalHint)
+		{
+			GiveHint("Good job, you found coal, find some more");
+			hintSystem.CoalHint = true;
+		}
+		
+		coalCounter++;
 	}
 	
 	/**
@@ -119,9 +166,7 @@ class PlayState extends FlxState
 		//when SPACE pressed, which currentMovingPlayer
 		if (FlxG.keys.anyJustPressed([SPACE]))
 		{
-			currentMovingPlayer++;
-			if (currentMovingPlayer >= 3)
-				currentMovingPlayer = 0;
+			ChangeActivePlayer();
 		}
 		
 		//when R pressed, reset current level
@@ -153,13 +198,115 @@ class PlayState extends FlxState
 		gridSizeY = Std.int(y);
 	}
 	
+	/**
+	 * Give a hint tot he player
+	 */
+	public function GiveHint(_text:String, BIG:Bool = false)
+	{
+		hints.SetText(_text);
+		if (BIG)
+		{
+			hints.SetPosition((FlxG.width  - 500) / 2, 300);
+		}
+		else
+		{
+			hints.SetPosition((FlxG.width  - 500) / 2, FlxG.height - 250);
+		}
+		showHint = !BIG;
+	}
+	
+	/**
+	 * Creating the UI components
+	 */
 	function CreateUI()
 	{
+		activePlayerSprite.push(new FlxSprite((FlxG.width - 270) / 2, FlxG.height - 100));
+		activePlayerSprite[0].loadGraphic(AssetPaths.PurpleBig_03__png);
+		add(activePlayerSprite[0]);
+		
+		activePlayerSprite.push(new FlxSprite(((FlxG.width - 270) / 2) + 90, FlxG.height - 100));
+		activePlayerSprite[1].loadGraphic(AssetPaths.YellowBig_03__png);
+		activePlayerSprite[1].scale.set(.7, .7);
+		add(activePlayerSprite[1]);
+		
+		activePlayerSprite.push(new FlxSprite(((FlxG.width - 270) / 2) + 180, FlxG.height - 100));
+		activePlayerSprite[2].loadGraphic(AssetPaths.GreenBig_03__png);
+		activePlayerSprite[2].scale.set(.7, .7);
+		add(activePlayerSprite[2]);
+		
+		hints = new DialogueBox((FlxG.width  - 500) / 2, FlxG.height + 10, "Coach", "", OnDialogueBox);
+		add(hints);
+		
+		coalCounterSprite = new FlxSprite(10, 10);
+		coalCounterSprite.loadGraphic(AssetPaths.coalCounter__png);
+		add(coalCounterSprite);
+		
+		coalCounterText = new FlxText(10 + 78, 10 + 18, 0, "", 24);
+		coalCounterText.text = coalCounter + "/" + coalMax + "";
+		coalCounterText.color = FlxColor.BLACK;
+		add(coalCounterText);
+		
+		speedClock = new FlxSprite(FlxG.width - 120, 10);
+		speedClock.loadGraphic(AssetPaths.Clock_03__png);
+		add(speedClock);
+		
+		speedClockArrow = new FlxSprite(FlxG.width - 120, 10);
+		speedClockArrow.loadGraphic(AssetPaths.Arrow_03__png);
+		add(speedClockArrow);
+		
 		if (PublicVariables.UseDebug)
 		{
 			debugText = new FlxText(0, 0, 0, "", 20);
 			add(debugText);
 		}
+	}
+	
+	/**
+	 * Change the current moving player
+	 */
+	function ChangeActivePlayer()
+	{
+		currentMovingPlayer++;
+		if (currentMovingPlayer >= 3)
+			currentMovingPlayer = 0;
+			
+		for (i in 0...3)
+		{
+			activePlayerSprite[i].scale.set(i == currentMovingPlayer ? 1 : .7, i == currentMovingPlayer ? 1 : .7);
+		}
+	}
+	
+	/**
+	 * updating the UI components
+	 */
+	function UpdateUI()
+	{
+		if (showHint)
+		{
+			hinttimer += 1 / 60;
+			
+			if (hinttimer >= 5)
+			{
+				OnDialogueBox();
+				hinttimer = 0;
+				showHint = false;
+			}
+		}
+		
+		
+		
+		coalCounterText.text = coalCounter + "/" + coalMax + "";
+		
+		speedClockArrow.angle = 360 * (trainTimer / PublicVariables.trainMaxSpeed);
+		
+	}
+	
+	/**
+	 * rest dialogueBox
+	 */
+	function OnDialogueBox()
+	{
+		hints.SetPosition((FlxG.width  - 500) / 2, FlxG.height + 10);
 	}
 	
 	/**
@@ -176,14 +323,19 @@ class PlayState extends FlxState
 				
 				crateGrid[y][x] = crateIDList[FlxG.random.int(0, 2)];
 				
-				if (FlxG.random.bool(10))
-					crateGrid[y][x] = 12; // coal
-				
-				if (FlxG.random.bool(20))
-					crateGrid[y][x] = 0; // empty
-				
 				if (x < 4 && y < 3)
+				{
 					crateGrid[y][x] = 0; // empty space around players
+				}
+				else if ((x == gridSizeX - 1 && y == 0) || (x == 0 && y == gridSizeY - 1) || (x == gridSizeX - 1 && y == gridSizeY - 1))
+				{
+					crateGrid[y][x] = 12; // coal
+					coalMax++;
+				}
+				else if (FlxG.random.bool(20))
+				{
+					crateGrid[y][x] = 0; // empty
+				}	
 			}
 		}
 		
@@ -267,7 +419,7 @@ class PlayState extends FlxState
 	 * Create all background components
 	 */
 	function CreateBackgroundItems()
-	{
+	{		
 		grass.push(new FlxSprite());
 		grass[0].loadGraphic(AssetPaths.background__png);
 		add(grass[0]);
@@ -304,7 +456,7 @@ class PlayState extends FlxState
 	/**
 	 * Updates the graphics of the grid
 	 */
-	private function updateGrid()
+	public function updateGrid()
 	{
 		crateGroup.destroy();
 		
@@ -357,7 +509,7 @@ class PlayState extends FlxState
 			case 11: return AssetPaths.purple_block__png;
 			case 101: return AssetPaths.orange_block__png;
 			case 110: return AssetPaths.green_block__png;
-			case 12: return AssetPaths.coal__png;
+			case 12: return AssetPaths.Coal8080_03__png;
 			default: return AssetPaths.red_block__png;
 		}
 	}

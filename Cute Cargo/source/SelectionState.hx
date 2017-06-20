@@ -9,6 +9,8 @@ import flixel.FlxSprite;
 
 class SelectionState extends FlxState
 {			
+	var box:DialogueBox;
+	
 	override public function create():Void
 	{
 		FlxG.camera.zoom = 1.5;
@@ -38,10 +40,15 @@ class SelectionState extends FlxState
 		
 		
 		//dialogueBox added for first explaning
-		var box = new DialogueBox((FlxG.width - 500) / 2, 350, "Hint", "This screen will guide you to a level.\nIf a button is dark it can not be pushed, otherwise you can push it to go to that level.");
+		box = new DialogueBox((FlxG.width - 500) / 2, 350, "Hint", "This screen will guide you to a level.\nIf a button is dark it can not be pushed, otherwise you can push it to go to that level.", OnExit);
 		add(box);
 		
 		super.create();
+	}
+	
+	function OnExit()
+	{
+		box.kill();
 	}
 
 	function OnReturnClicked()

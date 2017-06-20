@@ -5,11 +5,13 @@ import flixel.ui.FlxButton;
 import flixel.util.FlxColor;
 import flixel.math.FlxPoint;
 
+import flixel.FlxG;
+
 class Button extends FlxButton
 {
 	public function new(_x:Float = 0, _y:Float = 0, _text:String, ?_onClick:Void->Void) 
 	{
-		super(_x, _y, _text, _onClick);
+		super(_x, _y, _text, function clicker() { FlxG.sound.play(AssetPaths.NFF_bump__wav); _onClick(); });
 		this.loadGraphic(AssetPaths.button__png, true, 281, 64);
 		this.setupAnimation("normal", FlxButton.NORMAL);
 		this.setupAnimation("pressed", FlxButton.PRESSED);
