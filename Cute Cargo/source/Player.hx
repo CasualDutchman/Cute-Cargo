@@ -88,10 +88,13 @@ class Player extends FlxSprite
 				if (prevMovement.y - mousePoint.y == -1)
 				{
 					movementArray.push(MoveOrientation.DOWN);
+					movementSteps++;
 					prevMovement = mousePoint;
-					if (movementArray.length >= 10)
+					
+					if (movementSteps >= 10)
 					{
 						isMoving = true;
+						movementSteps = 0;
 						movementArray.reverse();
 						changeCharacter = true;
 					}
@@ -99,10 +102,13 @@ class Player extends FlxSprite
 				if (prevMovement.y - mousePoint.y == 1)
 				{
 					movementArray.push(MoveOrientation.UP);
+					movementSteps++;
 					prevMovement = mousePoint;
-					if (movementArray.length >= 10)
+					
+					if (movementSteps >= 10)
 					{
 						isMoving = true;
+						movementSteps = 0;
 						movementArray.reverse();
 						changeCharacter = true;
 					}
@@ -113,21 +119,27 @@ class Player extends FlxSprite
 				if (prevMovement.x - mousePoint.x == -1)
 				{
 					movementArray.push(MoveOrientation.RIGHT);
+					movementSteps++;
 					prevMovement = mousePoint;
-					if (movementArray.length >= 10)
+					
+					if (movementSteps >= 10)
 					{
 						isMoving = true;
+						movementSteps = 0;
 						movementArray.reverse();
 						changeCharacter = true;
 					}
 				}
 				if (prevMovement.x - mousePoint.x == 1)
 				{
-					movementArray.push(MoveOrientation.LEFT);
+					movementArray.push(MoveOrientation.LEFT);  
+					movementSteps++;
 					prevMovement = mousePoint;
-					if (movementArray.length >= 10)
+					
+					if (movementSteps >= 10)
 					{
 						isMoving = true;
+						movementSteps = 0;
 						movementArray.reverse();
 						changeCharacter = true;
 					}

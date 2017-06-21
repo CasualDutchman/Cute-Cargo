@@ -4,6 +4,7 @@ import flixel.FlxState;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup;
 import flixel.FlxG;
+import flixel.system.FlxSoundGroup;
 import flixel.text.FlxText;
 import flixel.tile.FlxTilemap;
 import flixel.system.FlxAssets;
@@ -145,6 +146,8 @@ class PlayState extends FlxState
 		}
 		trainTimerIncrement = 0.00001;
 		
+		FlxG.sound.play(AssetPaths.NFF_coin_04__wav, 0.1);
+		
 		//if (!hintSystem.CoalHint)
 		{
 			GiveHint("Good job, you found coal, find some more");
@@ -203,14 +206,17 @@ class PlayState extends FlxState
 	 */
 	public function GiveHint(_text:String, BIG:Bool = false)
 	{
-		hints.SetText(_text);
 		if (BIG)
 		{
-			hints.SetPosition((FlxG.width  - 500) / 2, 300);
+			hints = new DialogueBox((FlxG.width  - 420) / 2, 300, _text, OnDialogueBox);
+			add(hints);
+			//hints.SetPosition((FlxG.width  - 420) / 2, 300);
 		}
 		else
 		{
-			hints.SetPosition((FlxG.width  - 500) / 2, FlxG.height - 250);
+			hints = new DialogueBox((FlxG.width  - 400) / 2, FlxG.height - 350, _text, OnDialogueBox, AssetPaths.SpeechBubbleSmallNew_03__png, false);
+			add(hints);
+			//hints.SetPosition((FlxG.width  - 420) / 2, FlxG.height - 250);
 		}
 		showHint = !BIG;
 	}
@@ -220,50 +226,66 @@ class PlayState extends FlxState
 	 */
 	function CreateUI()
 	{
-		activePlayerSprite.push(new FlxSprite((FlxG.width - 270) / 2, FlxG.height - 100));
+		activePlayerSprite.push(new FlxSprite((FlxG.width - 270) / 2, FlxG.height - 120));
 		activePlayerSprite[0].loadGraphic(AssetPaths.PurpleBig_03__png);
 		add(activePlayerSprite[0]);
 		
-		activePlayerSprite.push(new FlxSprite(((FlxG.width - 270) / 2) + 90, FlxG.height - 100));
+		activePlayerSprite.push(new FlxSprite(((FlxG.width - 270) / 2) + 90, FlxG.height - 120));
 		activePlayerSprite[1].loadGraphic(AssetPaths.YellowBig_03__png);
 		activePlayerSprite[1].scale.set(.7, .7);
 		add(activePlayerSprite[1]);
 		
-		activePlayerSprite.push(new FlxSprite(((FlxG.width - 270) / 2) + 180, FlxG.height - 100));
+		activePlayerSprite.push(new FlxSprite(((FlxG.width - 270) / 2) + 180, FlxG.height - 120));
 		activePlayerSprite[2].loadGraphic(AssetPaths.GreenBig_03__png);
 		activePlayerSprite[2].scale.set(.7, .7);
 		add(activePlayerSprite[2]);
 		
-		hints = new DialogueBox((FlxG.width  - 500) / 2, FlxG.height + 10, "Coach", "", OnDialogueBox);
+		hints = new DialogueBox((FlxG.width  - 420) / 2, FlxG.height + 10, "", OnDialogueBox);
 		add(hints);
 		
-		coalCounterSprite = new FlxSprite(10, 10);
+		coalCounterSprite = new FlxSprite(FlxG.width - 170, 33);
 		coalCounterSprite.loadGraphic(AssetPaths.coalCounter__png);
 		add(coalCounterSprite);
 		
-		coalCounterText = new FlxText(10 + 78, 10 + 18, 0, "", 24);
+		coalCounterText = new FlxText(FlxG.width - 170 + 85, 33 + 20, 0, "", 24);
 		coalCounterText.text = coalCounter + "/" + coalMax + "";
-		coalCounterText.color = FlxColor.BLACK;
+		coalCounterText.setFormat(AssetPaths.ChateaudeGarage_FREE_FOR_PERSONAL_USE_ONLY__ttf, 24, FlxColor.BLACK);
 		add(coalCounterText);
 		
-		speedClock = new FlxSprite(FlxG.width - 120, 10);
-		speedClock.loadGraphic(AssetPaths.Clock_03__png);
+		speedClock = new FlxSprite((FlxG.width - 103) / 2, 20);
+		speedClock.loadGraphic(AssetPaths.NewClock_03__png);
 		add(speedClock);
 		
-		speedClockArrow = new FlxSprite(FlxG.width - 120, 10);
+		speedClockArrow = new FlxSprite((FlxG.width - 103) / 2, 20);
 		speedClockArrow.antialiasing = true;
 		speedClockArrow.loadGraphic(AssetPaths.Arrow_03__png);
 		add(speedClockArrow);
 		
-		var speedClockArrowDot = new FlxSprite(FlxG.width - 120, 10);
-		speedClockArrowDot.loadGraphic(AssetPaths.Arrow_Dot__png);
-		add(speedClockArrowDot);
+		var infoButton = new ButtonSmall(40, FlxG.height - 90, SupplyInformation, AssetPaths.button_info__png);
+		add(infoButton);
+		
+		var exitButton = new ButtonSmall(FlxG.width - 40 - 64, FlxG.height - 90, OnExit, AssetPaths.button_return__png);
+		add(exitButton);
 		
 		if (PublicVariables.UseDebug)
 		{
 			debugText = new FlxText(0, 0, 0, "", 20);
 			add(debugText);
 		}
+	}
+	
+	function OnExit()
+	{
+		for (sound in FlxG.sound.defaultMusicGroup.sounds)
+		{
+			sound.stop();
+		}
+		FlxG.switchState(new SelectionState());
+	}
+	
+	function SupplyInformation()
+	{
+		GiveHint("This option is under construction, please try again later.", true);
 	}
 	
 	/**
@@ -279,6 +301,8 @@ class PlayState extends FlxState
 		{
 			activePlayerSprite[i].scale.set(i == currentMovingPlayer ? 1 : .7, i == currentMovingPlayer ? 1 : .7);
 		}
+		
+		playerList[currentMovingPlayer].prevMovement.set(playerList[currentMovingPlayer].posX, playerList[currentMovingPlayer].posY);
 	}
 	
 	/**
@@ -311,7 +335,7 @@ class PlayState extends FlxState
 	 */
 	function OnDialogueBox()
 	{
-		hints.SetPosition((FlxG.width  - 500) / 2, FlxG.height + 10);
+		hints.destroy();
 	}
 	
 	/**
@@ -396,13 +420,13 @@ class PlayState extends FlxState
 		if (grass[0].y >= 1280)
 		{
 			grass[0].y = grass[1].y - grass[0].graphic.height;
-			grass[0].loadGraphic(FlxG.random.bool(50) ? AssetPaths.background__png : AssetPaths.background__png);
+			grass[0].loadGraphic(FlxG.random.bool(50) ? AssetPaths.Level_1_Main__png : AssetPaths.Level_1_Main__png);
 		}
 		
 		if (grass[1].y >= 1280)
 		{
 			grass[1].y = grass[0].y - grass[1].graphic.height;
-			grass[1].loadGraphic(FlxG.random.bool(50) ? AssetPaths.background__png : AssetPaths.background__png);
+			grass[1].loadGraphic(FlxG.random.bool(50) ? AssetPaths.Level_1_Main__png : AssetPaths.Level_1_Main__png);
 		}
 		
 		if (carrierBumped != 0)
@@ -417,6 +441,8 @@ class PlayState extends FlxState
 			carrier.x += variation;
 			carrierBumpInterval = 100;
 			carrierBumped = variation;
+			
+			FlxG.sound.play(AssetPaths.NFF_bump__wav, 0.1);
 		}
 	}
 	
@@ -426,16 +452,19 @@ class PlayState extends FlxState
 	function CreateBackgroundItems()
 	{		
 		grass.push(new FlxSprite());
-		grass[0].loadGraphic(AssetPaths.background__png);
+		grass[0].loadGraphic(AssetPaths.Level_1_Main__png);
 		add(grass[0]);
 		
 		grass.push(new FlxSprite(0, -grass[0].height));
-		grass[1].loadGraphic(AssetPaths.background__png);
+		grass[1].loadGraphic(AssetPaths.Level_1_Main__png);
 		add(grass[1]);
 		
 		carrier = new FlxSprite(100, 140);
 		carrier.loadGraphic(AssetPaths.carrier_wood__png);
 		add(carrier);
+		
+		FlxG.sound.playMusic(AssetPaths.POL_train_cabin_short__wav, 0.1);
+		FlxG.sound.play(AssetPaths.POL_metro_short__wav, 0.1, true);
 	}
 	
 	/**

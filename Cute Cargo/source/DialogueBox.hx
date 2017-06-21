@@ -9,32 +9,28 @@ import flixel.util.FlxColor;
 class DialogueBox extends FlxGroup
 {
 	var spr:FlxSprite;
-	var titleBox:FlxText;
 	var textBox:FlxText;
 	var exit:ButtonSmall;
 	
-	public function new(_x:Float, _y:Float, _title:String, _text:String, ?_onClick:Void->Void) 
+	public function new(_x:Float, _y:Float, _text:String, ?_onClick:Void->Void, spritename:String = AssetPaths.CoachSpeech_03__png, hasButton:Bool = true) 
 	{
 		super();
 		
 		spr = new FlxSprite(_x, _y);
-		spr.loadGraphic(AssetPaths.dialogue__png);
+		spr.loadGraphic(spritename);
 		add(spr);
 		
-		titleBox = new FlxText(_x + 33, _y + 33, 0, _title, 24);
-		titleBox.bold = true;
-		titleBox.setFormat(AssetPaths.Freshman__ttf, 28, FlxColor.BLACK);
-		titleBox.color = FlxColor.BLACK;
-		add(titleBox);
-		
-		textBox = new FlxText(_x + 33, _y + 80, 0, _text, 20);
-		textBox.fieldWidth = 420;
-		textBox.setFormat(AssetPaths.Freshman__ttf, 28, FlxColor.BLACK);
+		textBox = new FlxText(_x + 24, _y + 24, 0, _text, 16);
+		textBox.fieldWidth = 270;
+		textBox.setFormat(AssetPaths.ChateaudeGarage_FREE_FOR_PERSONAL_USE_ONLY__ttf, 22, FlxColor.BLACK);
 		textBox.color = FlxColor.BLACK;
 		add(textBox);
 		
-		exit = new ButtonSmall(_x + 410, _y + 15, _onClick, AssetPaths.button_return__png);
-		add(exit);
+		if (hasButton)
+		{
+			exit = new ButtonSmall(_x + 256, _y + 246, _onClick, AssetPaths.button_coach_cont__png, 42, 41);
+			add(exit);
+		}
 	}
 	
 	public function SetText(_text:String)
@@ -46,12 +42,10 @@ class DialogueBox extends FlxGroup
 	{
 		spr.x = _x;
 		spr.y = _y;
-		titleBox.x = _x + 33;
-		titleBox.y = _y + 33;
-		textBox.x = _x + 33;
-		textBox.y = _y + 80;
-		exit.x = _x + 410;
-		exit.y = _y + 15;
+		textBox.x = _x + 24;
+		textBox.y = _y + 24;
+		exit.x = _x + 256;
+		exit.y = _y + 247;
 	}
 	
 	

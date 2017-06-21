@@ -15,6 +15,10 @@ class SelectionState extends FlxState
 	{
 		FlxG.camera.zoom = 1;
 		
+		var bg = new FlxSprite();
+		bg.loadGraphic(AssetPaths.LevelScreen__png);
+		add(bg);
+		
 		for (i in 0...PublicVariables.levelSizes.length)
 		{
 			if (i < PublicVariables.levelActiveLevels)
@@ -27,23 +31,16 @@ class SelectionState extends FlxState
 							sound.stop();
 						}
 						
-						if (i == 0)
-						{
-							FlxG.switchState(new CoachState());
-						}
-						else
-						{
-							var state = new PlayState();
-							state.setGridSize(PublicVariables.levelSizes[i].x, PublicVariables.levelSizes[i].y);
-							FlxG.switchState(state); 
-						}
+						var state = new PlayState();
+						state.setGridSize(PublicVariables.levelSizes[i].x, PublicVariables.levelSizes[i].y);
+						FlxG.switchState(state); 
 					});
 				add(button);
 			}
 			else
 			{
 				var noClick:FlxSprite = new FlxSprite((FlxG.width - 281) / 2, 370 + (i * 60));
-				noClick.loadGraphic(AssetPaths.button_notclick__png);
+				noClick.loadGraphic(AssetPaths.LockedLevel_03__png);
 				add(noClick);
 			}
 		}
@@ -53,7 +50,7 @@ class SelectionState extends FlxState
 		
 		
 		//dialogueBox added for first explaning
-		box = new DialogueBox((FlxG.width - 500) / 2, 550, "Hint", "This is the level selection screen. Here you can choose the levels you want to play. Click on the first level to begin.", OnExit);
+		box = new DialogueBox((FlxG.width - 420) / 2, 350, "This is the level selection screen. Here you can choose the levels you want to play. Click on the first level to start the game.", OnExit);
 		add(box);
 		
 		super.create();
