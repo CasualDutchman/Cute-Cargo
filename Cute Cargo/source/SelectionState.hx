@@ -8,7 +8,9 @@ import flixel.util.FlxAxes;
 import flixel.FlxSprite;
 
 class SelectionState extends FlxState
-{			
+{	
+	public var addHint:Bool = true;
+	
 	var box:DialogueBox;
 	
 	override public function create():Void
@@ -33,6 +35,7 @@ class SelectionState extends FlxState
 						
 						var state = new PlayState();
 						state.setGridSize(PublicVariables.levelSizes[i].x, PublicVariables.levelSizes[i].y);
+						state.AddToMaxTime(i * 30);
 						FlxG.switchState(state); 
 					});
 				add(button);
@@ -50,8 +53,11 @@ class SelectionState extends FlxState
 		
 		
 		//dialogueBox added for first explaning
-		box = new DialogueBox((FlxG.width - 420) / 2, 350, "This is the level selection screen. Here you can choose the levels you want to play. Click on the first level to start the game.", OnExit);
-		add(box);
+		if (addHint)
+		{
+			box = new DialogueBox((FlxG.width - 420) / 2, 350, PublicVariables.coachSelectionHint, OnExit);
+			add(box);
+		}
 		
 		super.create();
 	}

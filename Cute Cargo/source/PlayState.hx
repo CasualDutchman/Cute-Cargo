@@ -33,6 +33,7 @@ class PlayState extends FlxState
 	public var currentMovingPlayer:Int = 0; // who's turn?
 	
 	public var trainTimer:Float = 0.0;
+	var maxTrainTimer:Float;
 	public var trainTimerIncrement:Float = 0.0;
 	
 	private var player1:Player;
@@ -53,6 +54,7 @@ class PlayState extends FlxState
 	var hints:DialogueBox;
 	var hinttimer:Float = 0;
 	var showHint:Bool;
+	var bigHint:Bool;
 	
 	public var hintSystem:HintSystem;
 	
@@ -60,6 +62,8 @@ class PlayState extends FlxState
 	var coalMax:Int;
 	var coalCounterSprite:FlxSprite;
 	var coalCounterText:FlxText;
+	var walkCounterSprite:FlxSprite;
+	var walkCounterText:FlxText;
 	
 	var speedClock:FlxSprite;
 	var speedClockArrow:FlxSprite;
@@ -74,8 +78,6 @@ class PlayState extends FlxState
 		
 		CreatePlayers();
 		
-		trainTimer = PublicVariables.trainStartSpeed;
-		
 		if (PublicVariables.UseDebug)
 		{
 			testText = new FlxText(gridStartX - 80, gridStartY + 10, 200, "", 20);
@@ -89,7 +91,7 @@ class PlayState extends FlxState
 		
 		CreateUI();
 		
-		GiveHint("Move by making a path with your fingers", true);
+		GiveHint(PublicVariables.coachMovementExplain, true);
 		
 		super.create();
 	}
@@ -99,31 +101,40 @@ class PlayState extends FlxState
 	 */
 	override public function update(elapsed:Float):Void
 	{	
-		trainTimer -= (trainTimerIncrement / 60.0);
-		trainTimerIncrement = MathHelper.ClampFloat(trainTimerIncrement + (PublicVariables.trainIncrement / 60.0), 0, PublicVariables.trainMaxIncrement);
+		if (!bigHint)
+		{
+			trainTimer -= (trainTimerIncrement / 60.0);
+			trainTimerIncrement = MathHelper.ClampFloat(trainTimerIncrement + (PublicVariables.trainIncrement / 60.0), 0, PublicVariables.trainMaxIncrement);
+		}
 		
 		if (trainTimer <= 20 && !hintSystem.warnedSpeed)
 		{
-			GiveHint("Hurry up, the train is slowing down. You need " + (coalMax - coalCounter) + " coal!");
+			GiveHint(PublicVariables.coachHurryUp(coalMax - coalCounter));
 			hintSystem.warnedSpeed = true;
 		}
 		
-		if(PublicVariables.UseDebug)
-			testText.text = Std.int(trainTimer) + "";
+		
 		
 		if (trainTimer <= 0)
 		{
-			FlxG.switchState(new MenuState());
+			hints.destroy();
+			bigHint = true;
+			hints = new DialogueBox((FlxG.width  - 420) / 2, 300, "You were too late. You did not grab the coal, please try again.", OnExit);
+			add(hints);
 		}
 		
 		UpdateBackGround();
 		
 		UpdateUI();
 		
-		playerList[currentMovingPlayer].movement(crateGrid, this);
+		if(!bigHint)
+			playerList[currentMovingPlayer].movement(crateGrid, this);
 		
 		if(PublicVariables.UseDebug)
-			debugText.text = playerList[currentMovingPlayer].prevMovement + " - (" + playerList[currentMovingPlayer].posX + " - " + playerList[currentMovingPlayer].posY + ")";
+			testText.text = trainTimer + " / " + maxTrainTimer + "";
+		
+		if(PublicVariables.UseDebug)
+			//debugText.text = playerList[currentMovingPlayer].prevMovement + " - (" + playerList[currentMovingPlayer].posX + " - " + playerList[currentMovingPlayer].posY + ")";
 		
 		#if flash
 			UpdateFlash();
@@ -137,22 +148,25 @@ class PlayState extends FlxState
 		
 	}
 	
+	public function AddToMaxTime(i:Int)
+	{
+		maxTrainTimer = PublicVariables.trainStartSpeed + i;
+		trainTimer = maxTrainTimer;
+	}
+	
 	public function AddCoal(value:Float)
 	{
 		trainTimer += value;
-		if (trainTimer >= PublicVariables.trainMaxSpeed && PublicVariables.trainMaxSpeed != 0)
+		if (trainTimer >= maxTrainTimer)
 		{
-			trainTimer = PublicVariables.trainMaxSpeed;
+			trainTimer = maxTrainTimer;
 		}
 		trainTimerIncrement = 0.00001;
 		
 		FlxG.sound.play(AssetPaths.NFF_coin_04__wav, 0.1);
 		
-		//if (!hintSystem.CoalHint)
-		{
-			GiveHint("Good job, you found coal, find some more");
-			hintSystem.CoalHint = true;
-		}
+		GiveHint(PublicVariables.coachCoalReward);
+		hintSystem.CoalHint = true;
 		
 		coalCounter++;
 	}
@@ -164,7 +178,7 @@ class PlayState extends FlxState
 	{
 		#if flash
 		if (FlxG.mouse.justReleased)
-			playerList[currentMovingPlayer].ClickBlock(crateGrid, FlxG.mouse.screenX, FlxG.mouse.screenY);
+			//playerList[currentMovingPlayer].ClickBlock(crateGrid, FlxG.mouse.screenX, FlxG.mouse.screenY);
 		
 		//when SPACE pressed, which currentMovingPlayer
 		if (FlxG.keys.anyJustPressed([SPACE]))
@@ -190,8 +204,8 @@ class PlayState extends FlxState
 	{
 		for (touch in FlxG.touches.list)
 		{			
-			if (touch.justPressed)
-				playerList[currentMovingPlayer].ClickBlock(crateGrid, touch.x, touch.y);
+			if (touch.justPressed){}
+				//playerList[currentMovingPlayer].ClickBlock(crateGrid, touch.x, touch.y);
 		}
 	}
 	
@@ -205,9 +219,11 @@ class PlayState extends FlxState
 	 * Give a hint tot he player
 	 */
 	public function GiveHint(_text:String, BIG:Bool = false)
-	{
+	{	
+		hints.destroy();
 		if (BIG)
 		{
+			bigHint = true;
 			hints = new DialogueBox((FlxG.width  - 420) / 2, 300, _text, OnDialogueBox);
 			add(hints);
 			//hints.SetPosition((FlxG.width  - 420) / 2, 300);
@@ -228,6 +244,7 @@ class PlayState extends FlxState
 	{
 		activePlayerSprite.push(new FlxSprite((FlxG.width - 270) / 2, FlxG.height - 120));
 		activePlayerSprite[0].loadGraphic(AssetPaths.PurpleBig_03__png);
+		activePlayerSprite[0].scale.set(1.2, 1.2);
 		add(activePlayerSprite[0]);
 		
 		activePlayerSprite.push(new FlxSprite(((FlxG.width - 270) / 2) + 90, FlxG.height - 120));
@@ -251,6 +268,14 @@ class PlayState extends FlxState
 		coalCounterText.text = coalCounter + "/" + coalMax + "";
 		coalCounterText.setFormat(AssetPaths.ChateaudeGarage_FREE_FOR_PERSONAL_USE_ONLY__ttf, 24, FlxColor.BLACK);
 		add(coalCounterText);
+		
+		walkCounterSprite = new FlxSprite(17, 37);
+		walkCounterSprite.loadGraphic(AssetPaths.FeetButton_03__png);
+		add(walkCounterSprite);
+		
+		walkCounterText = new FlxText(20 + 17, 33 + 20, 0, "", 24);
+		walkCounterText.setFormat(AssetPaths.ChateaudeGarage_FREE_FOR_PERSONAL_USE_ONLY__ttf, 24, FlxColor.BLACK);
+		add(walkCounterText);
 		
 		speedClock = new FlxSprite((FlxG.width - 103) / 2, 20);
 		speedClock.loadGraphic(AssetPaths.NewClock_03__png);
@@ -280,7 +305,9 @@ class PlayState extends FlxState
 		{
 			sound.stop();
 		}
-		FlxG.switchState(new SelectionState());
+		var newstate = new SelectionState();
+		newstate.addHint = false;
+		FlxG.switchState(newstate);
 	}
 	
 	function SupplyInformation()
@@ -299,7 +326,7 @@ class PlayState extends FlxState
 			
 		for (i in 0...3)
 		{
-			activePlayerSprite[i].scale.set(i == currentMovingPlayer ? 1 : .7, i == currentMovingPlayer ? 1 : .7);
+			activePlayerSprite[i].scale.set(i == currentMovingPlayer ? 1.2 : .7, i == currentMovingPlayer ? 1.2 : .7);
 		}
 		
 		playerList[currentMovingPlayer].prevMovement.set(playerList[currentMovingPlayer].posX, playerList[currentMovingPlayer].posY);
@@ -310,7 +337,7 @@ class PlayState extends FlxState
 	 */
 	function UpdateUI()
 	{
-		if (showHint)
+		if (showHint && !bigHint)
 		{
 			hinttimer += 1 / 60;
 			
@@ -322,11 +349,19 @@ class PlayState extends FlxState
 			}
 		}
 		
+		if (coalCounter >= 3)
+		{
+			hints.destroy();
+			bigHint = true;
+			hints = new DialogueBox((FlxG.width  - 420) / 2, 300, "You got all 3 coal, congratulations!", OnExit);
+			add(hints);
+		}
 		
+		walkCounterText.text = 10 - playerList[currentMovingPlayer].movementSteps + "";
 		
 		coalCounterText.text = coalCounter + "/" + coalMax + "";
 		
-		speedClockArrow.angle = 360 * (trainTimer / PublicVariables.trainMaxSpeed);
+		speedClockArrow.angle = 360 * (trainTimer / maxTrainTimer);
 		
 	}
 	
@@ -335,7 +370,8 @@ class PlayState extends FlxState
 	 */
 	function OnDialogueBox()
 	{
-		hints.destroy();
+		bigHint = false;
+		hints.kill();
 	}
 	
 	/**
@@ -460,7 +496,7 @@ class PlayState extends FlxState
 		add(grass[1]);
 		
 		carrier = new FlxSprite(100, 140);
-		carrier.loadGraphic(AssetPaths.carrier_wood__png);
+		carrier.loadGraphic(AssetPaths.WoodMain__png);
 		add(carrier);
 		
 		FlxG.sound.playMusic(AssetPaths.POL_train_cabin_short__wav, 0.1);

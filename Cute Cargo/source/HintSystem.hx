@@ -14,6 +14,9 @@ class HintSystem
 	public var warnedSpeed:Bool;
 	public var firstColorExplain:Bool;
 	
+	public var hasMoved:Bool;
+	public var mergeExplanation:Bool;
+	
 	public function new()
 	{
 		

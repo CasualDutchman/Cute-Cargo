@@ -32,7 +32,7 @@ class Player extends FlxSprite
 	
 	public var sizer:Int;
 	
-	var movementSteps:Int;
+	public var movementSteps:Int;
 	
 	var movementTimer:Float = 0;
 	
@@ -45,7 +45,9 @@ class Player extends FlxSprite
 		posX = pX;
 		posY = pY;
 		sizer = PlayState.cratePixelSize;
-		loadGraphic(_id == 0 ? AssetPaths.purple_crate__png : (_id == 1 ? AssetPaths.orange_crate__png : AssetPaths.green_crate__png));
+		loadGraphic(_id == 0 ? AssetPaths.purpleguy_walking__png : (_id == 1 ? AssetPaths.orangeguy_walking__png : AssetPaths.greenguy_walking__png), true, 80, 80);
+		animation.add("Walk", [0, 1, 2, 3, 4, 5], 8);
+		angle = 180;
 		//makeGraphic(sizer, sizer, playerID == 0? FlxColor.PURPLE : ( playerID == 1 ? FlxColor.ORANGE : FlxColor.GREEN)); // placeholder colored block
 	}
 	
@@ -87,30 +89,40 @@ class Player extends FlxSprite
 			{
 				if (prevMovement.y - mousePoint.y == -1)
 				{
-					movementArray.push(MoveOrientation.DOWN);
-					movementSteps++;
-					prevMovement = mousePoint;
-					
-					if (movementSteps >= 10)
+					if (movementArray.length == 0 && ClickBlock(currentGrid, mousePoint))
+					{}
+					else
 					{
-						isMoving = true;
-						movementSteps = 0;
-						movementArray.reverse();
-						changeCharacter = true;
+						movementArray.push(MoveOrientation.DOWN);
+						movementSteps++;
+						prevMovement = mousePoint;
+						
+						if (movementSteps >= 10)
+						{
+							isMoving = true;
+							movementSteps = 0;
+							movementArray.reverse();
+							changeCharacter = true;
+						}
 					}
 				}
 				if (prevMovement.y - mousePoint.y == 1)
 				{
-					movementArray.push(MoveOrientation.UP);
-					movementSteps++;
-					prevMovement = mousePoint;
-					
-					if (movementSteps >= 10)
+					if (movementArray.length == 0 && ClickBlock(currentGrid, mousePoint))
+					{}
+					else
 					{
-						isMoving = true;
-						movementSteps = 0;
-						movementArray.reverse();
-						changeCharacter = true;
+						movementArray.push(MoveOrientation.UP);
+						movementSteps++;
+						prevMovement = mousePoint;
+						
+						if (movementSteps >= 10)
+						{
+							isMoving = true;
+							movementSteps = 0;
+							movementArray.reverse();
+							changeCharacter = true;
+						}
 					}
 				}
 			}
@@ -118,30 +130,40 @@ class Player extends FlxSprite
 			{
 				if (prevMovement.x - mousePoint.x == -1)
 				{
-					movementArray.push(MoveOrientation.RIGHT);
-					movementSteps++;
-					prevMovement = mousePoint;
-					
-					if (movementSteps >= 10)
+					if (movementArray.length == 0 && ClickBlock(currentGrid, mousePoint))
+					{}
+					else
 					{
-						isMoving = true;
-						movementSteps = 0;
-						movementArray.reverse();
-						changeCharacter = true;
+						movementArray.push(MoveOrientation.RIGHT);
+						movementSteps++;
+						
+						if (movementSteps >= 10)
+						{
+							isMoving = true;
+							movementSteps = 0;
+							movementArray.reverse();
+							changeCharacter = true;
+						}
 					}
+					prevMovement = mousePoint;
 				}
 				if (prevMovement.x - mousePoint.x == 1)
 				{
-					movementArray.push(MoveOrientation.LEFT);  
-					movementSteps++;
-					prevMovement = mousePoint;
-					
-					if (movementSteps >= 10)
+					if (movementArray.length == 0 && ClickBlock(currentGrid, mousePoint))
+					{}
+					else
 					{
-						isMoving = true;
-						movementSteps = 0;
-						movementArray.reverse();
-						changeCharacter = true;
+						movementArray.push(MoveOrientation.LEFT);  
+						movementSteps++;
+						prevMovement = mousePoint;
+						
+						if (movementSteps >= 10)
+						{
+							isMoving = true;
+							movementSteps = 0;
+							movementArray.reverse();
+							changeCharacter = true;
+						}
 					}
 				}
 			}
@@ -149,11 +171,18 @@ class Player extends FlxSprite
 		else if (isReleasing)
 		{
 			isMoving = true;
+			animation.play("Walk");
 			movementArray.reverse();
+			
 			if (!state.hintSystem.firstColorExplain && movementArray.length >= 1)
 			{
-				state.GiveHint("You can move blocks based on your player's color.");
+				state.GiveHint(PublicVariables.coachColorHint);
 				state.hintSystem.firstColorExplain = true;
+			}
+			else if (state.hintSystem.firstColorExplain && state.hintSystem.hasMoved && !state.hintSystem.mergeExplanation)
+			{
+				state.GiveHint(PublicVariables.coachPullHint);
+				state.hintSystem.mergeExplanation = true;
 			}
 		}
 		
@@ -164,6 +193,21 @@ class Player extends FlxSprite
 		
 		if (isMoving && movementTimer >= (60 * PublicVariables.playerMoveUpdate))
 		{
+			if (movementArray.length == 0)
+			{
+				if (changeCharacter)
+				{
+					state.ChangeActivePlayer();
+					changeCharacter = false;
+				}
+				
+				if (pullingOrientation != MoveOrientation.NONE)
+					pullingOrientation = MoveOrientation.NONE;
+				
+				isMoving = false;
+				animation.stop();
+			}
+			
 			var todoMovement:MoveOrientation = movementArray.pop();
 			
 			_up = todoMovement == MoveOrientation.UP;
@@ -171,17 +215,19 @@ class Player extends FlxSprite
 			_left = todoMovement == MoveOrientation.LEFT;
 			_right = todoMovement == MoveOrientation.RIGHT;
 			
-			movementTimer = 0;
+			if (_up)
+				angle = 0;
 			
-			if (movementArray.length <= 0)
-			{
-				if (changeCharacter)
-				{
-					state.ChangeActivePlayer();
-				}
-				
-				isMoving = false;
-			}
+			if (_down)
+				angle = 180;
+			
+			if (_left)
+				angle = 270;
+			
+			if (_right)
+				angle = 90;
+			
+			movementTimer = 0;
 		}
 		
 		//pulling
@@ -222,17 +268,15 @@ class Player extends FlxSprite
 			Moving(MoveOrientation.RIGHT, currentGrid, state);
 		}
 		
-		//currentGrid[posY][posX] = playerID + 2; // set current position to a player grid ID
+		currentGrid[posY][posX] = playerID + 2; // set current position to a player grid ID
 	}
 
-	public function ClickBlock(currentGrid:Array<Array<Int>>, clickX:Int, clickY:Int)
-	{
-		var positionClicked:FlxPoint = PlayState.GetGridPositionByScreenSpace(clickX, clickY);
-		
+	public function ClickBlock(currentGrid:Array<Array<Int>>, positionClicked:FlxPoint):Bool
+	{		
 		if (pullingOrientation != MoveOrientation.NONE && positionClicked.x == pullingBlockPosX && positionClicked.y == pullingBlockPosY)
 		{
 			pullingOrientation = MoveOrientation.NONE;
-			return;
+			//return false;
 		}
 		
 		for (i in 0...3)
@@ -243,21 +287,22 @@ class Player extends FlxSprite
 					pullingOrientation = MoveOrientation.RIGHT;
 				if (posX - positionClicked.x == 1 && posY - positionClicked.y == 0)
 					pullingOrientation = MoveOrientation.LEFT;
-				if (posY - positionClicked.x == 0 && posX - positionClicked.y == -1)
+				if (posX - positionClicked.x == 0 && posY - positionClicked.y == -1)
 					pullingOrientation = MoveOrientation.DOWN;
-				if (posY - positionClicked.x == 0 && posX - positionClicked.y == 1)
+				if (posX - positionClicked.x == 0 && posY - positionClicked.y == 1)
 					pullingOrientation = MoveOrientation.UP;
 				
-					trace(pullingOrientation);
 					
 				if (pullingOrientation != MoveOrientation.NONE)
 				{
 					pullingBlockPosX = Std.int(positionClicked.x);
 					pullingBlockPosY = Std.int(positionClicked.y);
-					break;
+					return true;
 				}
 			}
 		}
+		
+		return false;
 	}
 	
 	private function Moving(ori:MoveOrientation, currentGrid:Array<Array<Int>>, state:PlayState)
@@ -276,9 +321,6 @@ class Player extends FlxSprite
 		
 		if (currentGrid[posY + _y][posX + _x] == 0) //If the spot is empty
 		{
-			//moving the player;
-			MovePlayer(_x, _y, state, currentGrid);
-			
 			if (pullingOrientation != MoveOrientation.NONE)
 			{
 				currentGrid[prevPosY][prevPosX] = currentGrid[pullingBlockPosY][pullingBlockPosX];
@@ -288,6 +330,9 @@ class Player extends FlxSprite
 				pullingBlockPosX = prevPosX;
 				pullingBlockPosY = prevPosY;
 			}
+			
+			//moving the player;
+			MovePlayer(_x, _y, state, currentGrid);
 		}
 		else if (currentGrid[posY + _y][posX + _x] == 12) // if the spot is coal
 		{
@@ -310,6 +355,8 @@ class Player extends FlxSprite
 								currentGrid[posY + _y2][posX + _x2] = currentGrid[posY + _y][posX + _x]; // set second block to the first block
 								currentGrid[posY + _y][posX + _x] = 0; // set air
 								//moving the player
+								
+								state.hintSystem.hasMoved = true;
 								
 								MovePlayer(_x, _y, state, currentGrid);
 								break;
@@ -335,7 +382,7 @@ class Player extends FlxSprite
 							state.hintSystem.BasedColorTimer++;
 							if (state.hintSystem.BasedColorTimer >= 5)
 							{
-								state.GiveHint("You won't be able to move those blocks, because they are not based on your color");
+								state.GiveHint(PublicVariables.coachBlockedHint);
 								state.hintSystem.BasedColor = true;
 							}
 						}

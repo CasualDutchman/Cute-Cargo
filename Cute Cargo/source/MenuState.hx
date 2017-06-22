@@ -9,9 +9,7 @@ import flixel.math.FlxPoint;
 class MenuState extends FlxState
 {
 	private var buttonPlay:Button;
-	
-	var guy:FlxSprite;
-	
+		
 	override public function create():Void
 	{
 		FlxG.camera.zoom = 1;
@@ -23,19 +21,18 @@ class MenuState extends FlxState
 		bg.loadGraphic(AssetPaths.StartScreen__png);
 		add(bg);
 		
+		var icon = new FlxSprite((FlxG.width - 200) / 2, 150);
+		icon.loadGraphic(AssetPaths.logo2__png);
+		icon.antialiasing = true;
+		//icon.scale.set(2, 2);
+		add(icon);
+		
 		//creating a simple button to go to the game
 		buttonPlay = new Button(0, 0, "Play", clickedPlay, true);
 		buttonPlay.screenCenter();
 		buttonPlay.y += 100;
 		
 		add(buttonPlay);
-		
-		guy = new FlxSprite(100, 100);
-		guy.loadGraphic(AssetPaths.greenguy_walking__png, true, 80, 80);
-		guy.animation.add("Walk", [0, 1, 2, 3, 4, 5], 8);
-		guy.animation.play("Walk");
-		add(guy);
-		
 		
 		super.create();
 	}
